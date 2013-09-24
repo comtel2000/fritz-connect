@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+
+<BorderPane id="root" prefHeight="312.0" prefWidth="604.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.comtel.fritz.connect.MainController">
+  <bottom>
+    <ToolBar id="statusBar" minHeight="21.0" prefHeight="21.0" prefWidth="600.0" styleClass="bottom">
+      <items>
+        <Label fx:id="status" text="Status" />
+      </items>
+      <stylesheets>
+        <URL value="@main.css" />
+      </stylesheets>
+    </ToolBar>
+  </bottom>
+  <center>
+    <SplitPane fx:id="splitPane" dividerPositions="" focusTraversable="true" prefHeight="370.0" prefWidth="600.0" />
+  </center>
+  <stylesheets>
+    <URL value="@main.css" />
+  </stylesheets>
+  <top>
+    <GridPane id="GridPane" gridLinesVisible="false" hgap="0.0" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefHeight="33.0" prefWidth="-1.0" BorderPane.alignment="CENTER_LEFT">
+      <children>
+        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+          <items>
+            <Button fx:id="refreshBtn" onAction="#refreshAll" mnemonicParsing="false" text="Refresh" />
+          </items>
+        </ToolBar>
+        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.rowSpan="2147483647" GridPane.vgrow="NEVER">
+          <items>
+            <ToggleButton fx:id="settingsBtn" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="-1.0" prefWidth="80.0" selected="false" text="Settings" textAlignment="LEFT" />
+          </items>
+        </ToolBar>
+      </children>
+      <columnConstraints>
+        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="-1.0" minWidth="0.0" prefWidth="-1.0" />
+        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="100.0" />
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+      </rowConstraints>
+      <BorderPane.margin>
+        <Insets />
+      </BorderPane.margin>
+    </GridPane>
+  </top>
+</BorderPane>
