@@ -27,6 +27,7 @@ public class SwitcherApp extends Application {
 		sessionManager = SessionManager.createSessionManager("SwitcherApp");
 		sessionManager.loadSession();
 
+		stage.setTitle("FritzBox SwitcherFX");
 		Scene scene = new Scene(FXMLLoader.<Parent> load(SwitcherApp.class.getResource("main.fxml")));
 		stage.setScene(scene);
 		stage.show();
