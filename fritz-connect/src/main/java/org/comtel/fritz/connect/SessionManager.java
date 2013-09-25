@@ -31,15 +31,11 @@
  */
 package org.comtel.fritz.connect;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -70,17 +66,18 @@ public class SessionManager {
 
 	private final static org.slf4j.Logger logger = LoggerFactory.getLogger(SessionManager.class);
 
-	public final String SESSION_PROPERTIES_FILENAME;
-	public final String SESSION_DEVICESTREAM_FILENAME;
 	private String name;
-	private Properties props = new Properties();
+	private final Properties props = new Properties();
 
 	private final ObservableList<SwitchDevice> switchDevices = FXCollections.observableArrayList();
 
+	private final Path streamPath;
+	private final Path propPath;
+
 	private SessionManager(String name) {
 		this.name = name;
-		SESSION_PROPERTIES_FILENAME = name + "_session.properties";
-		SESSION_DEVICESTREAM_FILENAME = name + "_session.stream";
+		propPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), "." + name + ".properties");
+		streamPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), "." + name + ".stream");
 	}
 
 	private static SessionManager sessionManager;
@@ -98,23 +95,14 @@ public class SessionManager {
 	}
 
 	public void loadSession() {
-		Reader reader = null;
-		try {
-			reader = new FileReader(SESSION_PROPERTIES_FILENAME);
-			props.load(reader);
-		} catch (FileNotFoundException ignored) {
-		} catch (IOException ex) {
-			logger.error(ex.getMessage(), ex);
-		} finally {
-			try {
-				if (reader != null) {
-					reader.close();
-				}
+
+		if (Files.exists(propPath, LinkOption.NOFOLLOW_LINKS)) {
+			try (InputStream is = Files.newInputStream(propPath, StandardOpenOption.READ)) {
+				props.load(is);
 			} catch (IOException ex) {
 				logger.error(ex.getMessage(), ex);
 			}
 		}
-
 		try {
 			loadSwitchDeviceList();
 		} catch (ClassNotFoundException | IOException ex) {
@@ -124,8 +112,8 @@ public class SessionManager {
 
 	public void saveSession() {
 
-		try {
-			props.store(new FileWriter(SESSION_PROPERTIES_FILENAME), name + " session properties");
+		try (OutputStream outStream = Files.newOutputStream(propPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+			props.store(outStream, name + " session properties");
 		} catch (IOException ex) {
 			logger.error(ex.getMessage(), ex);
 		}
@@ -241,7 +229,7 @@ public class SessionManager {
 	}
 
 	/**
-	 * poor man property de/encryption
+	 * poor man's property de/encryption
 	 * 
 	 * @param property
 	 * @param propertyName
@@ -273,34 +261,31 @@ public class SessionManager {
 			}
 		});
 	}
-	
+
 	public final ObservableList<SwitchDevice> getSwitchDeviceList() {
 		return switchDevices;
 	}
 
 	private void loadSwitchDeviceList() throws IOException, ClassNotFoundException {
 		switchDevices.clear();
-		Path streamPath = FileSystems.getDefault().getPath(".", SESSION_DEVICESTREAM_FILENAME);
 
 		if (!Files.exists(streamPath, LinkOption.NOFOLLOW_LINKS)) {
 			logger.debug("no stream exist ({})", streamPath);
 			return;
 		}
-		
+
 		try (InputStream inStream = Files.newInputStream(streamPath, StandardOpenOption.READ)) {
 			try (ObjectInputStream oStream = new ObjectInputStream(inStream)) {
 				Object o = null;
 				while (inStream.available() > 0 && (o = oStream.readObject()) != null) {
 					SwitchDevice dev = (SwitchDevice) o;
-					if (!switchDevices.contains(dev)){
+					if (!switchDevices.contains(dev)) {
 						switchDevices.add(dev);
-					}else{
+					} else {
 						logger.error("device already exist ({})", dev);
 					}
 				}
 			}
-		} catch (FileNotFoundException e) {
-			logger.info("nothing found in file: {}", streamPath);
 		}
 	}
 
@@ -308,18 +293,13 @@ public class SessionManager {
 		if (switchDevices.isEmpty()) {
 			return;
 		}
-		Path streamPath = FileSystems.getDefault().getPath(".", SESSION_DEVICESTREAM_FILENAME);
-		if (Files.deleteIfExists(streamPath)) {
-			logger.debug("stream file deleted ({})", streamPath);
-		}
 
-		try (OutputStream outStream = Files.newOutputStream(streamPath, StandardOpenOption.CREATE_NEW)) {
+		try (OutputStream outStream = Files.newOutputStream(streamPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
 			try (ObjectOutputStream switchDeviceStream = new ObjectOutputStream(outStream)) {
 				for (SwitchDevice dev : switchDevices) {
 					switchDeviceStream.writeObject(dev);
 				}
 			}
-
 		}
 
 	}

@@ -29,14 +29,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 .split-pane {
     -fx-background-color: null;
     -fx-background-insets: 0, 0;
     -fx-padding: 0;
 }
-#statusBar > .container {
-    -fx-alignment: center;
+
+#switcherPane {
+    -fx-padding: 10;
+    -fx-background-color: #f7f7f7;
+    -fx-default-button:  #00ff00;
 }
+
 #statusBar .text {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
@@ -50,8 +55,10 @@
     -fx-text-fill: #6f6f6f;
     -fx-border-color: transparent transparent #dddddd transparent;
 }
+
 .settings {
     -fx-font-size: 11px;
+    
 }
 
 .check-box > .box > .mark {
@@ -103,32 +110,4 @@
         linear-gradient(to bottom, derive(-fx-default-button, -12%) 0%, derive(-fx-default-button, -3%) 20%, derive(-fx-default-button, -1%) 50%);
     -fx-background-insets: -0.2, 1, 2, 1 32 1 1, 1 33 1 1;
     -fx-background-radius: 3px, 2px, 1px, 2px 0 0 2px, 1 0 0 1;
-}
-#playControls * {
-    -fx-content-display: graphic-only;
-}
-#playControls > * > Pane {
-    -fx-background-color: white,#666;
-    -fx-background-insets: 1 0 -1 0, 0;
-}
-#playControls > #startBtn > Pane {
-    -fx-shape: "M27.05,532h-0.782c-0.333,0-0.602,0.273-0.602,0.61v14.659c0,0.338,0.269,0.61,0.602,0.61h0.782c0.332,0,0.602-0.272,0.602-0.61V532.61C27.652,532.273,27.382,532,27.05,532zM38.9,532l-9.263,7.94l9.263,7.939V532z";
-}
-#playControls > #rwBtn > Pane {
-    -fx-shape: "M64.866,531.999l-8.818,7.965l8.818,7.964v-6.796l7.301,6.796v-15.929l-7.301,6.797V531.999z";
-}
-#playControls > #playBtn:selected  > Pane {
-    -fx-shape: "M20.716,531.999c-0.665,0-1.204,0.542-1.204,1.212v13.328c0,0.671,0.539,1.213,1.204,1.213h2.188c0.665,0,1.203-0.542,1.203-1.213v-13.328c0-0.67-0.538-1.212-1.203-1.212H20.716zM10.87,531.999c-0.665,0-1.204,0.542-1.204,1.212v13.328c0,0.671,0.539,1.213,1.204,1.213h2.188c0.665,0,1.203-0.542,1.203-1.213v-13.328c0-0.67-0.539-1.212-1.203-1.212H10.87z";
-}
-#playControls > #playBtn> Pane {
-    -fx-shape: "M0,531.999l8.667,8L0,548V531.999z";
-}
-#playControls > #ffBtn > Pane {
-    -fx-shape: "M82.09,532v6.606L74.833,532v15.832l7.257-6.606v6.606l8.576-7.916L82.09,532z";
-}
-#playControls > #endBtn > Pane {
-    -fx-shape: "M52.525,532c-0.333,0-0.602,0.273-0.602,0.611v14.669c0,0.337,0.27,0.611,0.602,0.611h0.782c0.333,0,0.602-0.274,0.602-0.611v-14.669c0-0.338-0.27-0.611-0.602-0.611H52.525zM40.667,532v15.892l9.27-7.946L40.667,532z";
-}
-.tool-bar #loopBtn Pane {
-    -fx-shape: "M103.31,539.442v-2.544h-6.487c-0.907,0-1.646,0.738-1.646,1.646v1.637l-2.512,2.526v-4.163c0-2.296,1.861-4.157,4.157-4.157h6.487v-2.392l4.034,3.724L103.31,539.442z M92.753,544.033l4.034,3.725v-2.393h6.487c2.296,0,4.157-1.861,4.157-4.157v-4.163l-2.512,2.526v1.637c0,0.907-0.738,1.646-1.646,1.646h-6.487v-2.544L92.753,544.033z";
 }

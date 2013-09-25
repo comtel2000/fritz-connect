@@ -20,8 +20,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,11 +34,12 @@ import org.comtel.fritz.connect.FritzUtils;
 import org.comtel.fritz.connect.XmlUtils;
 import org.comtel.fritz.connect.cmd.SwitchCmd;
 import org.comtel.fritz.connect.device.SwitchDevice;
+import org.comtel.fritz.connect.exception.ServiceNotSupportedException;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public class SwitchService extends Service<Collection<SwitchDevice>> {
+public class SwitchService {
 
 	private final static org.slf4j.Logger logger = LoggerFactory.getLogger(SwitchService.class);
 
@@ -66,7 +65,11 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 	private final DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
 
 	/**
-	 * FritzBox firmware >= 84.05.55
+	 * FRITZ!BOX firmware >= FRITZ!OS 05.55 (homeautoswitch.lua)
+	 * <p>
+	 * FRITZ!OS 05.58-26414 BETA<br>
+	 * FRITZ!OS 05.59-26514 BETA<br>
+	 * 
 	 */
 	public SwitchService() {
 
@@ -139,11 +142,11 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 		HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 	}
 
-	private String sendSwitchCmd(String switchcmd, String sid) throws MalformedURLException, IOException {
+	private String sendSwitchCmd(String switchcmd, String sid) throws MalformedURLException, IOException, ServiceNotSupportedException {
 		return sendSwitchCmd(null, switchcmd, sid);
 	}
 
-	private String sendSwitchCmd(String ain, String switchcmd, String sid) throws MalformedURLException, IOException {
+	private String sendSwitchCmd(String ain, String switchcmd, String sid) throws MalformedURLException, IOException, ServiceNotSupportedException {
 		final String path;
 		if (ain == null) {
 			path = String.format(SID_SWITCHCMD_URL, switchcmd, sid);
@@ -162,6 +165,10 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 				response.append(scanner.nextLine());
 			}
 		}
+		if (response.indexOf("filename=/webservices/homeautoswitch.lua") > 0) {
+			throw new ServiceNotSupportedException(response.toString());
+		}
+
 		return response.toString();
 
 	}
@@ -217,7 +224,7 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 		return con;
 	}
 
-	public String getURL(){
+	public String getURL() {
 		try {
 			URL url = new URL(protocolProperty.get(), hostProperty.get(), portProperty.get(), "");
 			return url.toString();
@@ -226,16 +233,16 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 			return e.getMessage();
 		}
 
-		
 	}
+
 	public void validateConnection() throws Exception {
 		String sid = getSessionId();
-		if (sid == null || EMPTY_SID.equals(sid) || sid.length() != EMPTY_SID.length()){
+		if (sid == null || EMPTY_SID.equals(sid) || sid.length() != EMPTY_SID.length()) {
 			throw new Exception("general error: " + sid);
 		}
 	}
-	
-	public Collection<SwitchDevice> getSwitchDevices() throws Exception {
+
+	public Collection<SwitchDevice> getSwitchDevices() throws ServiceNotSupportedException, Exception {
 		String sid = getSessionId();
 
 		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, sid);
@@ -261,10 +268,11 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 
 	}
 
-	public void updateDeviceState(final SwitchDevice dev) throws Exception{
+	public void updateDeviceState(final SwitchDevice dev) throws Exception {
 		logger.info("try to change device state: {}", dev);
-		
+
 		String sid = getSessionId();
+
 		switch (dev.getState()) {
 		case ON:
 			dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.SETSWITCHON, sid));
@@ -277,28 +285,26 @@ public class SwitchService extends Service<Collection<SwitchDevice>> {
 			break;
 		}
 	}
-	
+
 	public void refreshSwitchDevice(final SwitchDevice dev) throws Exception {
 		String sid = getSessionId();
 
 		dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPRESENT, sid)));
 		dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME, sid));
 		dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE, sid));
-		dev.setPower(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid)));
-		dev.setEnergy(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHENERGY, sid)));
+		try {
+			dev.setPower(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid)));
+		} catch (Exception e) {
+			dev.setPower(-1);
+		}
+		try {
+			dev.setEnergy(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHENERGY, sid)));
+		} catch (Exception e) {
+			dev.setEnergy(-1);
+		}
 
 		logger.debug("updated: {}", dev);
 
 	}
 
-	@Override
-	protected Task<Collection<SwitchDevice>> createTask() {
-		return new Task<Collection<SwitchDevice>>() {
-
-			@Override
-			protected Collection<SwitchDevice> call() throws Exception {
-				return getSwitchDevices();
-			}
-		};
-	}
 }

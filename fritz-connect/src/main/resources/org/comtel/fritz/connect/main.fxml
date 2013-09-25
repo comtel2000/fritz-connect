@@ -14,9 +14,6 @@
       <items>
         <Label fx:id="status" text="Status" />
       </items>
-      <stylesheets>
-        <URL value="@main.css" />
-      </stylesheets>
     </ToolBar>
   </bottom>
   <center>
@@ -26,22 +23,22 @@
     <URL value="@main.css" />
   </stylesheets>
   <top>
-    <GridPane id="GridPane" gridLinesVisible="false" hgap="0.0" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefHeight="33.0" prefWidth="-1.0" BorderPane.alignment="CENTER_LEFT">
+    <GridPane id="GridPane" gridLinesVisible="false" hgap="0.0" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefHeight="33.0" prefWidth="-1.0" BorderPane.alignment="CENTER_RIGHT">
       <children>
-        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
           <items>
-            <Button fx:id="refreshBtn" onAction="#refreshAll" mnemonicParsing="false" text="Refresh" />
+            <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#refreshAll" text="Refresh" />
           </items>
         </ToolBar>
-        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.rowSpan="2147483647" GridPane.vgrow="NEVER">
+        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="1"  GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
           <items>
-            <ToggleButton fx:id="settingsBtn" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="-1.0" prefWidth="80.0" selected="false" text="Settings" textAlignment="LEFT" />
+            <ToggleButton fx:id="settingsBtn" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="-1.0" prefWidth="80.0" selected="true" text="Settings" textAlignment="LEFT" />
           </items>
         </ToolBar>
       </children>
       <columnConstraints>
-        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="-1.0" minWidth="0.0" prefWidth="-1.0" />
-        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="100.0" />
+        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="-1.0" minWidth="-Infinity" prefWidth="-1.0" />
+        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="-1.0" />
       </columnConstraints>
       <rowConstraints>
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />

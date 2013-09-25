@@ -13,8 +13,6 @@ public class FritzUtilsTest {
 	public void testChallengeResponse() throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		String challenge = "1234567z";
 		String pwd = "äbc";
-
 		assertEquals("1234567z-9e224a41eeefa284df7bb0f26c2913e2", FritzUtils.getChallengeResponse(challenge, pwd));
-
 	}
 }

@@ -2,6 +2,9 @@ package org.comtel.fritz.connect;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -18,13 +21,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -34,6 +35,8 @@ import javafx.util.Duration;
 
 import org.comtel.fritz.connect.device.SwitchDevice;
 import org.comtel.fritz.connect.device.SwitchDevice.State;
+import org.comtel.fritz.connect.exception.ServiceNotSupportedException;
+import org.controlsfx.dialog.Dialogs;
 import org.slf4j.LoggerFactory;
 
 public class MainController implements Initializable {
@@ -64,19 +67,19 @@ public class MainController implements Initializable {
 	public void initialize(URL url, ResourceBundle bundle) {
 		try {
 			settingsPanel = FXMLLoader.load(MainController.class.getResource("settings.fxml"), bundle);
-			switcherPanel = new VBox();
-			switcherPanel.setPadding(new Insets(10));
-
-			splitPane.getItems().addAll(switcherPanel, settingsPanel);
-			splitPane.getDividers().get(0).setPosition(1);
-
+			ScrollPane sp = new ScrollPane(switcherPanel = new VBox());
+			switcherPanel.setId("switcherPane");
+			
+			splitPane.getItems().addAll(sp, settingsPanel);
+			splitPane.getDividers().get(0).setPosition(1.0);
+			
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 		}
 
-		sessionManager.bind(settingsBtn.selectedProperty(), "settingToggle");
+		//sessionManager.bind(settingsBtn.selectedProperty(), "settingToggle");
 		sessionManager.bind(splitPane.getDividers().get(0).positionProperty(), "splitPanePosition");
-
+		
 		updateDeviceList(sessionManager.getSwitchDeviceList());
 
 		sessionManager.getSwitchDeviceList().addListener(new ListChangeListener<SwitchDevice>() {
@@ -95,7 +98,7 @@ public class MainController implements Initializable {
 
 			final CheckBox cb = new CheckBox(dev.getName());
 			cb.setId(dev.getAin());
-			cb.setTooltip(new Tooltip(String.format("engery: %s mW\n power: %s mW", dev.getEnergy(), dev.getPower())));
+			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nengery:\t%smW\npower:\t%smW", dev.getAin(), dev.getEnergy(), dev.getPower())));
 			cb.setSelected(dev.getState() == State.ON);
 			cb.setDisable(!dev.isPresent());
 
@@ -103,8 +106,11 @@ public class MainController implements Initializable {
 
 			cb.selectedProperty().addListener(new ChangeListener<Boolean>() {
 				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) {
+				public void changed(ObservableValue<? extends Boolean> observable, final Boolean oldValue, Boolean selected) {
 
+					if (cb.isDisable()){
+						return;
+					}
 					dev.setState(selected ? "1" : "0");
 					cb.setDisable(true);
 					Task<?> t = new Task<Object>() {
@@ -112,9 +118,14 @@ public class MainController implements Initializable {
 						protected Object call() throws Exception {
 							try {
 								SwitcherApp.getSwitchService().updateDeviceState(dev);
-								status.setText(dev.toString());
+								updateStatus(dev.toString());
+							} catch (ServiceNotSupportedException e) {
+								Dialogs.create().owner(refreshBtn.getScene().getWindow()).lightweight().title("Service not available").masthead("Firmware does not support AHA webservice. Please upgrade firmware to FRITZ!OS 05.55 or later.").showExceptionInNewWindow(e);
+								updateStatus("Service not available");
+								cb.setSelected(oldValue);
 							} catch (Exception e) {
-								status.setText(e.getMessage());
+								updateStatus(e.getMessage());
+								cb.setSelected(oldValue);
 							} finally {
 								cb.setDisable(false);
 							}
@@ -159,8 +170,12 @@ public class MainController implements Initializable {
 			protected Object call() throws Exception {
 				try {
 					sessionManager.getSwitchDeviceList().addAll(SwitcherApp.getSwitchService().getSwitchDevices());
-				} catch (Exception e) {
-					status.setText(e.getMessage());
+					updateStatus("Synchronized with url: " + SwitcherApp.getSwitchService().getURL());
+				} catch (ServiceNotSupportedException e) {
+					Dialogs.create().owner(refreshBtn.getScene().getWindow()).lightweight().title("Service not available").masthead("Firmware does not support AHA webservice. Please upgrade firmware to FRITZ!OS 05.55 or later.").showExceptionInNewWindow(e);
+					updateStatus("Service not available");
+				}  catch (Exception e) {
+					updateStatus(e.getMessage());
 				} finally {
 					refreshBtn.setDisable(false);
 				}
@@ -170,5 +185,10 @@ public class MainController implements Initializable {
 		};
 		t.run();
 
+	}
+	
+	private void updateStatus(String msg){
+		SimpleDateFormat df = new SimpleDateFormat();
+		status.setText(String.format("[%s] %s", df.format(GregorianCalendar.getInstance().getTime()), msg));
 	}
 }
