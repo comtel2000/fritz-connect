@@ -27,10 +27,10 @@
       <children>
         <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
           <items>
-            <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#refreshAll" text="Refresh" />
+            <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#refreshAll" pickOnBounds="false" text="Refresh All" />
           </items>
         </ToolBar>
-        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="1"  GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
+        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
           <items>
             <ToggleButton fx:id="settingsBtn" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="-1.0" prefWidth="80.0" selected="true" text="Settings" textAlignment="LEFT" />
           </items>

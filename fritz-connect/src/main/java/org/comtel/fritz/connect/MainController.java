@@ -2,9 +2,9 @@ package org.comtel.fritz.connect;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -43,6 +43,7 @@ public class MainController implements Initializable {
 
 	private SessionManager sessionManager = SessionManager.getSessionManager();
 
+	private ResourceBundle bundle;
 	private final static org.slf4j.Logger logger = LoggerFactory.getLogger(MainController.class);
 
 	private VBox switcherPanel;
@@ -65,12 +66,13 @@ public class MainController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle bundle) {
+		this.bundle = bundle;
 		try {
 			settingsPanel = FXMLLoader.load(MainController.class.getResource("settings.fxml"), bundle);
-			ScrollPane sp = new ScrollPane(switcherPanel = new VBox());
+			ScrollPane scrollPane = new ScrollPane(switcherPanel = new VBox());
 			switcherPanel.setId("switcherPane");
 			
-			splitPane.getItems().addAll(sp, settingsPanel);
+			splitPane.getItems().addAll(scrollPane, settingsPanel);
 			splitPane.getDividers().get(0).setPosition(1.0);
 			
 		} catch (IOException e) {
@@ -96,14 +98,16 @@ public class MainController implements Initializable {
 		
 		for (final SwitchDevice dev : list) {
 
-			final CheckBox cb = new CheckBox(dev.getName());
+			final CheckBox cb = new CheckBox(String.format("%s\t[%d Wh, %.2f W]", dev.getName(), dev.getEnergy(), dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d));
 			cb.setId(dev.getAin());
-			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nengery:\t%smW\npower:\t%smW", dev.getAin(), dev.getEnergy(), dev.getPower())));
+			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nenergy:\t%dWh\npower:\t%.2fW", dev.getAin(), dev.getEnergy(), dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d)));
 			cb.setSelected(dev.getState() == State.ON);
 			cb.setDisable(!dev.isPresent());
 
 			switcherPanel.getChildren().add(cb);
 
+			//switcherPanel.getChildren().add((Node) FXMLLoader.load(DeviceController.class.getResource("device.fxml"), bundle));
+			
 			cb.selectedProperty().addListener(new ChangeListener<Boolean>() {
 				@Override
 				public void changed(ObservableValue<? extends Boolean> observable, final Boolean oldValue, Boolean selected) {
@@ -169,8 +173,10 @@ public class MainController implements Initializable {
 			@Override
 			protected Object call() throws Exception {
 				try {
+					long time = System.currentTimeMillis();
+					sessionManager.getSwitchDeviceList().clear();
 					sessionManager.getSwitchDeviceList().addAll(SwitcherApp.getSwitchService().getSwitchDevices());
-					updateStatus("Synchronized with url: " + SwitcherApp.getSwitchService().getURL());
+					updateStatus(String.format("Synchronized with url: %s [%dms]", SwitcherApp.getSwitchService().getURL(), (System.currentTimeMillis() - time)));
 				} catch (ServiceNotSupportedException e) {
 					Dialogs.create().owner(refreshBtn.getScene().getWindow()).lightweight().title("Service not available").masthead("Firmware does not support AHA webservice. Please upgrade firmware to FRITZ!OS 05.55 or later.").showExceptionInNewWindow(e);
 					updateStatus("Service not available");
@@ -188,7 +194,7 @@ public class MainController implements Initializable {
 	}
 	
 	private void updateStatus(String msg){
-		SimpleDateFormat df = new SimpleDateFormat();
-		status.setText(String.format("[%s] %s", df.format(GregorianCalendar.getInstance().getTime()), msg));
+		DateTimeFormatter df = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
+		status.setText(String.format("[%s] %s", df.format(LocalDateTime.now()), msg));
 	}
 }

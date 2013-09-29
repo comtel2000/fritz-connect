@@ -14,9 +14,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -48,6 +50,10 @@ public class SwitchService {
 	private final SimpleStringProperty userProperty = new SimpleStringProperty("");
 	private final SimpleStringProperty pwdProperty = new SimpleStringProperty("");
 
+	private final long SID_CACHE_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
+	private final SimpleStringProperty sidCacheProperty = new SimpleStringProperty(null);
+	private final SimpleLongProperty sidCacheTimeProperty = new SimpleLongProperty(-1);
+
 	private final SimpleStringProperty protocolProperty = new SimpleStringProperty("http");
 
 	private final SimpleBooleanProperty sslProperty = new SimpleBooleanProperty(false);
@@ -73,10 +79,25 @@ public class SwitchService {
 	 */
 	public SwitchService() {
 
+		hostProperty.addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> arg0, String arg1, String arg2) {
+				invalidateSidCache();
+			}
+		});
+
+		portProperty.addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				invalidateSidCache();
+			}
+		});
+
 		sslProperty.addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean ssl) {
 				protocolProperty.set(ssl ? "https" : "http");
+				invalidateSidCache();
 				if (ssl) {
 					try {
 						trustAllSslCertificate();
@@ -86,6 +107,11 @@ public class SwitchService {
 				}
 			}
 		});
+	}
+
+	private void invalidateSidCache() {
+		sidCacheProperty.set(null);
+		sidCacheTimeProperty.set(-1);
 	}
 
 	public final SimpleStringProperty getHostProperty() {
@@ -156,8 +182,10 @@ public class SwitchService {
 		HttpURLConnection con = createConnection(path);
 
 		if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+			invalidateSidCache();
 			throw new IOException("response code: " + con.getResponseCode());
 		}
+		sidCacheTimeProperty.set(System.currentTimeMillis());
 
 		StringBuilder response = new StringBuilder();
 		try (Scanner scanner = new Scanner(con.getInputStream())) {
@@ -171,6 +199,16 @@ public class SwitchService {
 
 		return response.toString();
 
+	}
+
+	private String getCachedSessionId() throws IOException, ParserConfigurationException, SAXException, NoSuchAlgorithmException {
+		if (sidCacheProperty.get() == null || System.currentTimeMillis() - sidCacheTimeProperty.get() > SID_CACHE_TIMEOUT) {
+			sidCacheProperty.set(getSessionId());
+			sidCacheTimeProperty.set(System.currentTimeMillis());
+			logger.info("update session id: {}", sidCacheProperty.get());
+		}
+
+		return sidCacheProperty.get();
 	}
 
 	private String getSessionId() throws IOException, ParserConfigurationException, SAXException, NoSuchAlgorithmException {
@@ -236,14 +274,14 @@ public class SwitchService {
 	}
 
 	public void validateConnection() throws Exception {
-		String sid = getSessionId();
+		String sid = getCachedSessionId();
 		if (sid == null || EMPTY_SID.equals(sid) || sid.length() != EMPTY_SID.length()) {
 			throw new Exception("general error: " + sid);
 		}
 	}
 
 	public Collection<SwitchDevice> getSwitchDevices() throws ServiceNotSupportedException, Exception {
-		String sid = getSessionId();
+		String sid = getCachedSessionId();
 
 		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, sid);
 		List<String> ainList = Arrays.asList(resp.split(","));

@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.StreamCorruptedException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -111,7 +112,7 @@ public class SessionManager {
 	}
 
 	public void saveSession() {
-
+		logger.debug("save session");
 		try (OutputStream outStream = Files.newOutputStream(propPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
 			props.store(outStream, name + " session properties");
 		} catch (IOException ex) {
@@ -128,8 +129,9 @@ public class SessionManager {
 
 	public void bind(final BooleanProperty property, final String propertyName) {
 		String value = props.getProperty(propertyName);
-		if (value != null)
+		if (value != null){
 			property.set(Boolean.valueOf(value));
+		}
 		property.addListener(new InvalidationListener() {
 
 			@Override
@@ -162,8 +164,9 @@ public class SessionManager {
 
 	public void bind(final DoubleProperty property, final String propertyName) {
 		String value = props.getProperty(propertyName);
-		if (value != null)
+		if (value != null){
 			property.set(Double.valueOf(value));
+		}
 		property.addListener(new InvalidationListener() {
 
 			@Override
@@ -273,12 +276,14 @@ public class SessionManager {
 			logger.debug("no stream exist ({})", streamPath);
 			return;
 		}
-
+		logger.info("load cached device list ({})", streamPath);
+		
 		try (InputStream inStream = Files.newInputStream(streamPath, StandardOpenOption.READ)) {
 			try (ObjectInputStream oStream = new ObjectInputStream(inStream)) {
 				Object o = null;
 				while (inStream.available() > 0 && (o = oStream.readObject()) != null) {
 					SwitchDevice dev = (SwitchDevice) o;
+					logger.debug("read dev: {}", dev);
 					if (!switchDevices.contains(dev)) {
 						switchDevices.add(dev);
 					} else {
@@ -286,6 +291,9 @@ public class SessionManager {
 					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			Files.delete(streamPath);
 		}
 	}
 
@@ -294,7 +302,7 @@ public class SessionManager {
 			return;
 		}
 
-		try (OutputStream outStream = Files.newOutputStream(streamPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+		try (OutputStream outStream = Files.newOutputStream(streamPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
 			try (ObjectOutputStream switchDeviceStream = new ObjectOutputStream(outStream)) {
 				for (SwitchDevice dev : switchDevices) {
 					switchDeviceStream.writeObject(dev);
