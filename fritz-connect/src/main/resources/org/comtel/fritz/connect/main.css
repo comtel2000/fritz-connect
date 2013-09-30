@@ -38,6 +38,7 @@
 
 #switcherPane {
     -fx-padding: 10;
+    -fx-spacing: 10;
     -fx-background-color: #f7f7f7;
     -fx-default-button:  #00ff00;
 }

@@ -294,12 +294,8 @@ public class SwitchService {
 			}
 		}
 
-		for (SwitchDevice dev : deviceList) {
-			dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPRESENT, sid)));
-			dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME, sid));
-			dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE, sid));
-			dev.setPower(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid)));
-			dev.setEnergy(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHENERGY, sid)));
+		for (final SwitchDevice dev : deviceList) {
+			refreshSwitchDevice(dev);
 			logger.info("updated: {}", dev);
 		}
 		return deviceList;
@@ -325,19 +321,23 @@ public class SwitchService {
 	}
 
 	public void refreshSwitchDevice(final SwitchDevice dev) throws Exception {
-		String sid = getSessionId();
+		String sid = getCachedSessionId();
 
 		dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPRESENT, sid)));
 		dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME, sid));
 		dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE, sid));
 		try {
-			dev.setPower(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid)));
+			String power = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid);
+			dev.setPower("inval".equals(power) ? 0 : Integer.valueOf(power));
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			dev.setPower(-1);
 		}
 		try {
-			dev.setEnergy(Integer.valueOf(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHENERGY, sid)));
+			String energy = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHENERGY, sid);
+			dev.setEnergy("inval".equals(energy) ? 0 : Integer.valueOf(energy));
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			dev.setEnergy(-1);
 		}
 
