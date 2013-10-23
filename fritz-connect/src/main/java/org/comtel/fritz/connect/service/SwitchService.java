@@ -179,6 +179,7 @@ public class SwitchService {
 		} else {
 			path = String.format(SID_AIN_SWITCHCMD_URL, ain, switchcmd, sid);
 		}
+		logger.debug("send: {}", path);
 		HttpURLConnection con = createConnection(path);
 
 		if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -196,7 +197,7 @@ public class SwitchService {
 		if (response.indexOf("filename=/webservices/homeautoswitch.lua") > 0) {
 			throw new ServiceNotSupportedException(response.toString());
 		}
-
+		logger.debug("get: {}", response);
 		return response.toString();
 
 	}
@@ -325,7 +326,18 @@ public class SwitchService {
 
 		dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPRESENT, sid)));
 		dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME, sid));
+		
+		if (!dev.isPresent()){
+			logger.debug("skip not present dev: {}", dev);
+			return;
+		}
+		
 		dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE, sid));
+		
+		if (dev.getAin().contains("-")){
+			logger.debug("skip updated group: {}", dev);
+			return;
+		}
 		try {
 			String power = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid);
 			dev.setPower("inval".equals(power) ? 0 : Integer.valueOf(power));
