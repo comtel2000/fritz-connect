@@ -1,12 +1,17 @@
 package org.comtel.fritz.connect;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
@@ -59,29 +64,29 @@ public class SettingsController implements Initializable {
 				});
 			}
 		});
-		
+
 		portField.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String port) {
-				
+
 				if (port == null || port.isEmpty()) {
 					SwitcherApp.getSwitchService().getPortProperty().set(-1);
 					return;
 				}
-				
-				if (port.length() > 5){
+
+				if (port.length() > 5) {
 					portField.setText(port.substring(0, 5));
 				}
-				
-				if (!port.matches("[0-9]{0,5}")){
-					if (oldValue.matches("[0-9]{0,5}")){
+
+				if (!port.matches("[0-9]{0,5}")) {
+					if (oldValue.matches("[0-9]{0,5}")) {
 						portField.setText(oldValue);
-					}else{
+					} else {
 						portField.setText("");
 					}
 					return;
 				}
-				
+
 				try {
 					SwitcherApp.getSwitchService().getPortProperty().set(Integer.valueOf(port));
 				} catch (NumberFormatException e) {
@@ -108,17 +113,42 @@ public class SettingsController implements Initializable {
 
 	@FXML
 	public void testConnection(ActionEvent event) {
-		testBtn.setDisable(true);
-		try {
-			SwitcherApp.getSwitchService().validateConnection();
-			Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("Test connection").masthead("Connection seems ok").message(SwitcherApp.getSwitchService().getURL()).showInformation();
-		} catch (Exception e) {
-			Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("Test connection").masthead("Connection fails").message(SwitcherApp.getSwitchService().getURL()).showExceptionInNewWindow(e);
-		} finally {
-			testBtn.setDisable(false);
+
+		TestConnectionService service = new TestConnectionService();
+
+		settingsPane.disableProperty().bind(service.runningProperty());
+		service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION").masthead("Response ok from URL: " + SwitcherApp.getSwitchService().getURL())
+						.message("try to refresh smart home devices").showInformation();
+			}
+		});
+		service.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				Throwable e = t.getSource().getException();
+				String msg = e != null ? e.getMessage() : "general error";;
+				Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION ERROR").masthead("Test connection fails! URL: " + SwitcherApp.getSwitchService().getURL())
+						.message(msg).showExceptionInNewWindow(e);
+				logger.error("test host connection failed", e);
+			}
+		});
+		service.start();
+	}
+
+	private class TestConnectionService extends Service<Void> {
+
+		protected Task<Void> createTask() {
+			return new Task<Void>() {
+				protected Void call() throws IOException, Exception {
+					SwitcherApp.getSwitchService().validateConnection();
+					return null;
+				}
+			};
 		}
 	}
-	
+
 	@FXML
 	public void resetFields(ActionEvent event) {
 		ipField.setText("fritz.box");

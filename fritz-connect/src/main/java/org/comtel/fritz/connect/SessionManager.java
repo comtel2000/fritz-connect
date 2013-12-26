@@ -36,7 +36,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.StreamCorruptedException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -293,12 +292,13 @@ public class SessionManager {
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			Files.delete(streamPath);
-		}
+			Files.deleteIfExists(streamPath);
+			}
 	}
 
 	private void saveSwitchDeviceList() throws IOException {
 		if (switchDevices.isEmpty()) {
+			Files.deleteIfExists(streamPath);
 			return;
 		}
 

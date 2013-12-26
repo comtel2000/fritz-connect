@@ -274,7 +274,7 @@ public class SwitchService {
 
 	}
 
-	public void validateConnection() throws Exception {
+	public void validateConnection() throws IOException, Exception {
 		String sid = getCachedSessionId();
 		if (sid == null || EMPTY_SID.equals(sid) || sid.length() != EMPTY_SID.length()) {
 			throw new Exception("general error: " + sid);
@@ -283,18 +283,23 @@ public class SwitchService {
 
 	public Collection<SwitchDevice> getSwitchDevices() throws ServiceNotSupportedException, Exception {
 		String sid = getCachedSessionId();
-
-		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, sid);
-		List<String> ainList = Arrays.asList(resp.split(","));
-		logger.debug("GETSWITCHLIST: {}", ainList);
-
 		Set<SwitchDevice> deviceList = new HashSet<>();
+		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, sid);
+		if (resp == null || resp.isEmpty()){
+			return deviceList;
+		}
+		List<String> ainList = Arrays.asList(resp.split(","));
+		logger.info("GETSWITCHLIST: {}", ainList);
+
 		for (String ain : ainList) {
+			if (ain == null || ain.isEmpty()){
+				logger.warn("empty AIN code detected");
+				continue;
+			}
 			if (!deviceList.add(new SwitchDevice(ain))) {
 				logger.error("double ain: {} detected", ain);
 			}
 		}
-
 		for (final SwitchDevice dev : deviceList) {
 			refreshSwitchDevice(dev);
 			logger.info("updated: {}", dev);
