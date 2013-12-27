@@ -257,7 +257,7 @@ public class SwitchService {
 	}
 
 	private final HttpURLConnection createConnection(String path) throws MalformedURLException, IOException {
-		URL url = new URL(protocolProperty.get(), hostProperty.get(), portProperty.get(), path);
+		URL url = new URL(protocolProperty.get(), getHost(), portProperty.get(), path);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		logger.debug("Sending request to URL: {}", url);
 		return con;
@@ -265,7 +265,7 @@ public class SwitchService {
 
 	public String getURL() {
 		try {
-			URL url = new URL(protocolProperty.get(), hostProperty.get(), portProperty.get(), "");
+			URL url = new URL(protocolProperty.get(), getHost(), portProperty.get(), "");
 			return url.toString();
 		} catch (MalformedURLException e) {
 			logger.error(e.getMessage(), e);
@@ -274,6 +274,23 @@ public class SwitchService {
 
 	}
 
+	public String getHost() {
+		try {
+			String host = hostProperty.get();
+			if (host.toLowerCase().startsWith("http://")) {
+				return host.substring(7);
+			}
+			if (host.toLowerCase().startsWith("https://")) {
+				return host.substring(8);
+			}
+			return host;
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return null;
+		}
+
+	}
+	
 	public void validateConnection() throws IOException, Exception {
 		String sid = getCachedSessionId();
 		if (sid == null || EMPTY_SID.equals(sid) || sid.length() != EMPTY_SID.length()) {
