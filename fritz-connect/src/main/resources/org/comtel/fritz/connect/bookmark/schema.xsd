@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="Bookmarks">
+		<xs:complexType>
+			<xs:sequence minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="Bookmark"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Bookmark">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ip"/>
+				<xs:element ref="useSSL"/>
+				<xs:element ref="port"/>
+				<xs:element ref="user"/>
+				<xs:element ref="password"/>
+			</xs:sequence>
+			<xs:attribute name="id" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ip" type="xs:NCName"/>
+	<xs:element name="useSSL" type="xs:boolean"/>
+	<xs:element name="port" type="xs:int"/>
+	<xs:element name="user" type="xs:NCName"/>
+	<xs:element name="password" type="xs:NCName"/>
+</xs:schema>

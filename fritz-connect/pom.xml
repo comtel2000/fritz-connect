@@ -24,6 +24,26 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+			  <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jaxb2-maven-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+            <execution>
+                <id>bookmark-xjc</id>
+                <goals>
+                    <goal>xjc</goal>
+                </goals>
+                <configuration>
+                <outputDirectory>${basedir}/src/main/java/</outputDirectory>
+                <schemaDirectory>${basedir}/src/main/resources/org/comtel/fritz/connect/bookmark</schemaDirectory>
+                    <schemaFiles>schema.xsd</schemaFiles>
+                    <packageName>org.comtel.fritz.connect.bookmark</packageName>
+                    <clearOutputDir>false</clearOutputDir>
+                </configuration>
+            </execution>
+        </executions>
+    </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>

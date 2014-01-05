@@ -58,6 +58,14 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.paint.Color;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import org.comtel.fritz.connect.bookmark.Bookmark;
+import org.comtel.fritz.connect.bookmark.Bookmarks;
+import org.comtel.fritz.connect.bookmark.ObjectFactory;
 import org.comtel.fritz.connect.device.SwitchDevice;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.slf4j.LoggerFactory;
@@ -70,7 +78,9 @@ public class SessionManager {
 	private final Properties props = new Properties();
 
 	private final ObservableList<SwitchDevice> switchDevices = FXCollections.observableArrayList();
+	private final ObservableList<Bookmark> bookmarkList = FXCollections.observableArrayList();
 
+	private final Path bookmarkPath;
 	private final Path streamPath;
 	private final Path propPath;
 
@@ -78,6 +88,7 @@ public class SessionManager {
 		this.name = name;
 		propPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), "." + name + ".properties");
 		streamPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), "." + name + ".stream");
+		bookmarkPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), "." + name + "_bookmarks.xml");
 	}
 
 	private static SessionManager sessionManager;
@@ -108,6 +119,12 @@ public class SessionManager {
 		} catch (ClassNotFoundException | IOException ex) {
 			logger.error(ex.getMessage(), ex);
 		}
+
+		try {
+			loadBookmarks();
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		}
 	}
 
 	public void saveSession() {
@@ -124,11 +141,16 @@ public class SessionManager {
 			logger.error(ex.getMessage(), ex);
 		}
 
+		try {
+			saveBookmarks();
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		}
 	}
 
 	public void bind(final BooleanProperty property, final String propertyName) {
 		String value = props.getProperty(propertyName);
-		if (value != null){
+		if (value != null) {
 			property.set(Boolean.valueOf(value));
 		}
 		property.addListener(new InvalidationListener() {
@@ -163,7 +185,7 @@ public class SessionManager {
 
 	public void bind(final DoubleProperty property, final String propertyName) {
 		String value = props.getProperty(propertyName);
-		if (value != null){
+		if (value != null) {
 			property.set(Double.valueOf(value));
 		}
 		property.addListener(new InvalidationListener() {
@@ -268,6 +290,10 @@ public class SessionManager {
 		return switchDevices;
 	}
 
+	public final ObservableList<Bookmark> getBookmarks() {
+		return bookmarkList;
+	}
+
 	private void loadSwitchDeviceList() throws IOException, ClassNotFoundException {
 		switchDevices.clear();
 
@@ -276,7 +302,7 @@ public class SessionManager {
 			return;
 		}
 		logger.info("load cached device list ({})", streamPath);
-		
+
 		try (InputStream inStream = Files.newInputStream(streamPath, StandardOpenOption.READ)) {
 			try (ObjectInputStream oStream = new ObjectInputStream(inStream)) {
 				Object o = null;
@@ -293,7 +319,7 @@ public class SessionManager {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			Files.deleteIfExists(streamPath);
-			}
+		}
 	}
 
 	private void saveSwitchDeviceList() throws IOException {
@@ -309,6 +335,44 @@ public class SessionManager {
 				}
 			}
 		}
+
+	}
+
+	private void loadBookmarks() throws IOException, JAXBException {
+		bookmarkList.clear();
+
+		if (!Files.exists(bookmarkPath, LinkOption.NOFOLLOW_LINKS)) {
+			logger.debug("no bookmarks exist ({})", bookmarkPath);
+			return;
+		}
+		logger.info("load bookmarks ({})", bookmarkPath);
+
+		JAXBContext context = JAXBContext.newInstance(Bookmarks.class);
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+
+		Bookmarks bookmarksXml = (Bookmarks) unmarshaller.unmarshal(Files.newBufferedReader(bookmarkPath));
+
+		if (bookmarksXml != null && bookmarksXml.getBookmark() != null) {
+			bookmarkList.addAll(bookmarksXml.getBookmark());
+		}
+
+	}
+
+	private void saveBookmarks() throws IOException, JAXBException {
+		if (bookmarkList.isEmpty()) {
+			Files.deleteIfExists(bookmarkPath);
+			return;
+		}
+
+		JAXBContext context = JAXBContext.newInstance(Bookmarks.class);
+		Marshaller m = context.createMarshaller();
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+		ObjectFactory fac = new ObjectFactory();
+		Bookmarks bookmarks = fac.createBookmarks();
+		bookmarks.getBookmark().addAll(bookmarkList);
+
+		m.marshal(bookmarks, Files.newBufferedWriter(bookmarkPath, StandardOpenOption.CREATE));
 
 	}
 
