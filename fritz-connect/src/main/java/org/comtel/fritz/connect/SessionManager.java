@@ -355,7 +355,7 @@ public class SessionManager {
 		if (bookmarksXml != null && bookmarksXml.getBookmark() != null) {
 			bookmarkList.addAll(bookmarksXml.getBookmark());
 		}
-
+		decryptBookmarks();
 	}
 
 	private void saveBookmarks() throws IOException, JAXBException {
@@ -370,10 +370,32 @@ public class SessionManager {
 
 		ObjectFactory fac = new ObjectFactory();
 		Bookmarks bookmarks = fac.createBookmarks();
+		encryptBookmarks();
 		bookmarks.getBookmark().addAll(bookmarkList);
 
 		m.marshal(bookmarks, Files.newBufferedWriter(bookmarkPath, StandardOpenOption.CREATE));
-
+		bookmarkList.clear();
 	}
 
+	private void encryptBookmarks(){
+		for (Bookmark bm : bookmarkList){
+			String pwd = bm.getPassword();
+			if (pwd != null){
+				StandardPBEStringEncryptor enc = new StandardPBEStringEncryptor();
+				enc.setPassword("X4E8SS09cw_Qq812");
+				bm.setPassword(enc.encrypt(pwd));
+			}
+		}
+	}
+	
+	private void decryptBookmarks(){
+		for (Bookmark bm : bookmarkList){
+			String pwd = bm.getPassword();
+			if (pwd != null){
+				StandardPBEStringEncryptor enc = new StandardPBEStringEncryptor();
+				enc.setPassword("X4E8SS09cw_Qq812");
+				bm.setPassword(enc.decrypt(pwd));
+			}
+		}
+	}
 }

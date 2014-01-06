@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -17,16 +18,25 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.util.Callback;
 
+import org.comtel.fritz.connect.bookmark.Bookmark;
 import org.controlsfx.dialog.Dialogs;
 import org.slf4j.LoggerFactory;
 
 public class SettingsController implements Initializable {
 
 	private final static org.slf4j.Logger logger = LoggerFactory.getLogger(SettingsController.class);
+
+	@FXML
+	private ListView<Bookmark> bookmarkListView;
 
 	@FXML
 	private Accordion settingsPane;
@@ -109,6 +119,65 @@ public class SettingsController implements Initializable {
 		SwitcherApp.getSwitchService().getUserProperty().bind(userField.textProperty());
 		SwitcherApp.getSwitchService().getPwdProperty().bind(pwdField.textProperty());
 		SwitcherApp.getSwitchService().getSslProperty().bind(sslCheckBox.selectedProperty());
+
+		bookmarkListView.setItems(sessionManager.getBookmarks());
+
+		bookmarkListView.setCellFactory(new Callback<ListView<Bookmark>, ListCell<Bookmark>>() {
+			@Override
+			public ListCell<Bookmark> call(ListView<Bookmark> param) {
+				return new BookmarkCell();
+			}
+		});
+
+		bookmarkListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent mouseEvent) {
+				if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+					if (mouseEvent.getClickCount() == 2) {
+						loadBookmark(null);
+					}
+				}
+			}
+		});
+	}
+
+	private class BookmarkCell extends ListCell<Bookmark> {
+
+		public BookmarkCell() {
+			itemProperty().addListener(new ChangeListener<Bookmark>() {
+
+				@Override
+				public void changed(ObservableValue<? extends Bookmark> observable, Bookmark oldValue, Bookmark newValue) {
+					if (newValue != null) {
+						textProperty().set(newValue.getId());
+					}
+				}
+			});
+		}
+
+	}
+
+	@FXML
+	public void loadBookmark(ActionEvent event) {
+		Bookmark bm = bookmarkListView.getSelectionModel().getSelectedItem();
+		if (bm != null) {
+			logger.info("try to load bookmark: {}", bm.getId());
+			ipField.setText(bm.getIp());
+			portField.setText(bm.getPort() > 0 ? Integer.toString(bm.getPort()) : "");
+			sslCheckBox.setSelected(bm.isUseSSL());
+			userField.setText(bm.getUser());
+			pwdField.setText(bm.getPassword());
+			settingsPane.setExpandedPane(settingsPane.getPanes().get(0));
+		}
+	}
+
+	@FXML
+	public void removeBookmark(ActionEvent event) {
+		ObservableList<Bookmark> bm = bookmarkListView.getSelectionModel().getSelectedItems();
+		if (bm != null) {
+			SessionManager sessionManager = SessionManager.getSessionManager();
+			sessionManager.getBookmarks().removeAll(bm);
+		}
 	}
 
 	@FXML
@@ -128,7 +197,8 @@ public class SettingsController implements Initializable {
 			@Override
 			public void handle(WorkerStateEvent t) {
 				Throwable e = t.getSource().getException();
-				String msg = e != null ? e.getMessage() : "general error";;
+				String msg = e != null ? e.getMessage() : "general error";
+				;
 				Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION ERROR").masthead("Test connection fails! URL: " + SwitcherApp.getSwitchService().getURL())
 						.message(msg).showExceptionInNewWindow(e);
 				logger.error("test host connection failed", e);
@@ -147,6 +217,30 @@ public class SettingsController implements Initializable {
 				}
 			};
 		}
+	}
+
+	@FXML
+	public void addBookmark(ActionEvent event) {
+
+		String id = Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("ADD BOOKMARK").masthead("Insert connection name:").showTextInput(ipField.getText());
+
+		if (id == null || id.isEmpty()) {
+			Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("ADD BOOKMARK").masthead("Connection name invalid!").showError();
+			return;
+		}
+		Bookmark bm = new Bookmark();
+		bm.setId(id);
+		bm.setIp(ipField.getText());
+		String port = portField.getText();
+		bm.setPort(Integer.valueOf(port != null && !port.isEmpty() ? port : "0"));
+
+		bm.setUseSSL(sslCheckBox.isSelected());
+		bm.setUser(userField.getText());
+		bm.setPassword(pwdField.getText());
+
+		SessionManager sessionManager = SessionManager.getSessionManager();
+		sessionManager.getBookmarks().add(bm);
+
 	}
 
 	@FXML

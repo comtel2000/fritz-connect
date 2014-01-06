@@ -11,6 +11,34 @@
 
 <Accordion fx:id="settingsPane" styleClass="settings, settings-header" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.comtel.fritz.connect.SettingsController">
   <expandedPane>
+    <TitledPane fx:id="x1" animated="false" text="Bookmarks">
+      <content>
+        <GridPane id="GridPane" hgap="5.0" vgap="5.0">
+          <children>
+            <Button mnemonicParsing="false" onAction="#loadBookmark" prefWidth="60.0" text="Load" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <Button mnemonicParsing="false" onAction="#removeBookmark" prefWidth="60.0" text="Remove" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+              <content>
+                <ListView fx:id="bookmarkListView" prefHeight="200.0" prefWidth="200.0" />
+              </content>
+            </ScrollPane>
+          </children>
+          <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
+          </columnConstraints>
+          <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+          </padding>
+          <rowConstraints>
+            <RowConstraints maxHeight="-Infinity" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+          </rowConstraints>
+        </GridPane>
+      </content>
+    </TitledPane>
+  </expandedPane>
+  <panes>
     <TitledPane fx:id="x3" animated="false" text="FritzBox settings">
       <content>
         <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
@@ -29,6 +57,7 @@
                 <TextField id="portField" fx:id="userField" prefWidth="200.0" promptText="" text="" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <PasswordField fx:id="pwdField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <Button id="testBtn" mnemonicParsing="false" onAction="#resetFields" text="Reset" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <Button id="bookBtn" mnemonicParsing="false" onAction="#addBookmark" text="Add Bookmark" GridPane.columnIndex="0" GridPane.rowIndex="6" />
               </children>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="-1.0" minWidth="10.0" prefWidth="110.0" />
@@ -44,27 +73,6 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
-          </content>
-        </ScrollPane>
-      </content>
-    </TitledPane>
-  </expandedPane>
-  <panes>
-    <fx:reference source="x3" />
-    <TitledPane fx:id="x1" animated="false" text="Bookmarks">
-      <content>
-        <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
-          <content>
-            <GridPane hgap="10.0" padding="$x2" vgap="10.0">
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
             </GridPane>
@@ -72,6 +80,7 @@
         </ScrollPane>
       </content>
     </TitledPane>
+    <fx:reference source="x1" />
   </panes>
   <stylesheets>
     <URL value="@main.css" />
