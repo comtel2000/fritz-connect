@@ -154,12 +154,9 @@ public class SettingsController implements Initializable {
 
 		public BookmarkCell() {
 			itemProperty().addListener(new ChangeListener<Bookmark>() {
-
 				@Override
 				public void changed(ObservableValue<? extends Bookmark> observable, Bookmark oldValue, Bookmark newValue) {
-					if (newValue != null) {
-						textProperty().set(newValue.getId());
-					}
+					textProperty().set(newValue != null ? newValue.getId() : "");
 				}
 			});
 		}
@@ -185,12 +182,6 @@ public class SettingsController implements Initializable {
 		Bookmark bm = bookmarkListView.getSelectionModel().getSelectedItem();
 		if (bm != null) {
 			bookmarkListView.getItems().remove(bm);
-
-			// repaint bug?
-			Bookmark bugFix = new Bookmark();
-			bookmarkListView.getItems().add(bugFix);
-			bookmarkListView.getItems().remove(bugFix);
-
 		}
 	}
 
