@@ -24,26 +24,26 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			  <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jaxb2-maven-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
-            <execution>
-                <id>bookmark-xjc</id>
-                <goals>
-                    <goal>xjc</goal>
-                </goals>
-                <configuration>
-                <outputDirectory>${basedir}/src/main/java/</outputDirectory>
-                <schemaDirectory>${basedir}/src/main/resources/org/comtel/fritz/connect/bookmark</schemaDirectory>
-                    <schemaFiles>schema.xsd</schemaFiles>
-                    <packageName>org.comtel.fritz.connect.bookmark</packageName>
-                    <clearOutputDir>false</clearOutputDir>
-                </configuration>
-            </execution>
-        </executions>
-    </plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>bookmark-xjc</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/main/java/</outputDirectory>
+							<schemaDirectory>${basedir}/src/main/resources/org/comtel/fritz/connect/bookmark</schemaDirectory>
+							<schemaFiles>schema.xsd</schemaFiles>
+							<packageName>org.comtel.fritz.connect.bookmark</packageName>
+							<clearOutputDir>false</clearOutputDir>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -71,18 +71,15 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.bluestemsoftware.open.maven.plugin</groupId> 
-				<artifactId>launch4j-plugin</artifactId> <version>1.5.0.0</version> <executions> 
-				<execution> <id>launch4j</id> <phase>package</phase> <goals> <goal>launch4j</goal> 
-				</goals> <configuration> <dontWrapJar>false</dontWrapJar> <headerType>gui</headerType> 
-				<outfile>target/${project.name}-${project.version}.exe</outfile> <jar>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar> 
-				<errTitle>${project.name}</errTitle> <jre> <minVersion>1.8.0</minVersion> 
-				</jre> <versionInfo> <fileVersion>1.0.0.0</fileVersion> <txtFileVersion>1.0.0.0</txtFileVersion> 
-				<fileDescription>Switcher.APP</fileDescription> <copyright>(c)omtel 2013</copyright> 
-				<productVersion>1.0.0.0</productVersion> <txtProductVersion>1.0.0.0</txtProductVersion> 
-				<productName>Switcher.APP</productName> <internalName>${project.artifactId}</internalName> 
-				<originalFilename>${project.name}-${project.version}.exe</originalFilename> 
-				</versionInfo> </configuration> </execution> </executions> </plugin> -->
+			<!-- <plugin> <groupId>org.bluestemsoftware.open.maven.plugin</groupId> <artifactId>launch4j-plugin</artifactId> <version>1.5.0.0</version> 
+				<executions> <execution> <id>launch4j</id> <phase>package</phase> <goals> <goal>launch4j</goal> </goals> <configuration> 
+				<dontWrapJar>false</dontWrapJar> <headerType>gui</headerType> <outfile>target/${project.name}-${project.version}.exe</outfile> 
+				<jar>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar> <errTitle>${project.name}</errTitle> 
+				<jre> <minVersion>1.8.0</minVersion> </jre> <versionInfo> <fileVersion>1.0.0.0</fileVersion> <txtFileVersion>1.0.0.0</txtFileVersion> 
+				<fileDescription>Switcher.APP</fileDescription> <copyright>(c)omtel 2013</copyright> <productVersion>1.0.0.0</productVersion> 
+				<txtProductVersion>1.0.0.0</txtProductVersion> <productName>Switcher.APP</productName> <internalName>${project.artifactId}</internalName> 
+				<originalFilename>${project.name}-${project.version}.exe</originalFilename> </versionInfo> </configuration> </execution> 
+				</executions> </plugin> -->
 		</plugins>
 	</build>
 	<dependencies>
@@ -118,4 +115,20 @@
 	<organization>
 		<name>comtel</name>
 	</organization>
+
+	<scm>
+		<connection>scm:git:https://github.com/comtel2000/fritz-connect.git</connection>
+		<developerConnection>scm:git:git@github.com:comtel2000/fritz-connect.git</developerConnection>
+		<url>https://github.com/comtel2000/fritz-connect/</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/comtel2000/fritz-connect/</url>
+	</ciManagement>
+	<issueManagement>
+		<url>https://github.com/comtel2000/fritz-connect/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
 </project>
