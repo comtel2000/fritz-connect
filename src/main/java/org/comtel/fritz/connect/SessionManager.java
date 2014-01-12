@@ -31,6 +31,8 @@
  */
 package org.comtel.fritz.connect;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -349,9 +351,10 @@ public class SessionManager {
 
 		JAXBContext context = JAXBContext.newInstance(Bookmarks.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
-
-		Bookmarks bookmarksXml = (Bookmarks) unmarshaller.unmarshal(Files.newBufferedReader(bookmarkPath));
-
+		Bookmarks bookmarksXml = null;
+		try (BufferedReader reader = Files.newBufferedReader(bookmarkPath)) {
+			bookmarksXml = (Bookmarks) unmarshaller.unmarshal(reader);
+		}
 		if (bookmarksXml != null && bookmarksXml.getBookmark() != null) {
 			bookmarkList.addAll(bookmarksXml.getBookmark());
 		}
@@ -372,8 +375,9 @@ public class SessionManager {
 		Bookmarks bookmarks = fac.createBookmarks();
 		encryptBookmarks();
 		bookmarks.getBookmark().addAll(bookmarkList);
-
-		m.marshal(bookmarks, Files.newBufferedWriter(bookmarkPath, StandardOpenOption.CREATE));
+		try (BufferedWriter writer = Files.newBufferedWriter(bookmarkPath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+			m.marshal(bookmarks, writer);
+		}
 		bookmarkList.clear();
 	}
 

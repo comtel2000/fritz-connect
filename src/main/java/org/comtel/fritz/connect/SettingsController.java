@@ -7,7 +7,6 @@ import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -21,6 +20,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.MouseButton;
@@ -58,6 +58,11 @@ public class SettingsController implements Initializable {
 
 	@FXML
 	private Button testBtn;
+
+	@FXML
+	private Button loadBtn;
+	@FXML
+	private Button removeBtn;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -121,6 +126,7 @@ public class SettingsController implements Initializable {
 		SwitcherApp.getSwitchService().getSslProperty().bind(sslCheckBox.selectedProperty());
 
 		bookmarkListView.setItems(sessionManager.getBookmarks());
+		bookmarkListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
 		bookmarkListView.setCellFactory(new Callback<ListView<Bookmark>, ListCell<Bookmark>>() {
 			@Override
@@ -139,6 +145,9 @@ public class SettingsController implements Initializable {
 				}
 			}
 		});
+		loadBtn.disableProperty().bind(bookmarkListView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
+		removeBtn.disableProperty().bind(bookmarkListView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
+
 	}
 
 	private class BookmarkCell extends ListCell<Bookmark> {
@@ -173,10 +182,15 @@ public class SettingsController implements Initializable {
 
 	@FXML
 	public void removeBookmark(ActionEvent event) {
-		ObservableList<Bookmark> bm = bookmarkListView.getSelectionModel().getSelectedItems();
+		Bookmark bm = bookmarkListView.getSelectionModel().getSelectedItem();
 		if (bm != null) {
-			SessionManager sessionManager = SessionManager.getSessionManager();
-			sessionManager.getBookmarks().removeAll(bm);
+			bookmarkListView.getItems().remove(bm);
+
+			// repaint bug?
+			Bookmark bugFix = new Bookmark();
+			bookmarkListView.getItems().add(bugFix);
+			bookmarkListView.getItems().remove(bugFix);
+
 		}
 	}
 
@@ -238,9 +252,7 @@ public class SettingsController implements Initializable {
 		bm.setUser(userField.getText());
 		bm.setPassword(pwdField.getText());
 
-		SessionManager sessionManager = SessionManager.getSessionManager();
-		sessionManager.getBookmarks().add(bm);
-
+		bookmarkListView.getItems().add(bm);
 	}
 
 	@FXML

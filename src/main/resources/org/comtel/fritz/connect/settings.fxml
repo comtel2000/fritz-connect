@@ -15,8 +15,8 @@
       <content>
         <GridPane id="GridPane" hgap="5.0" vgap="5.0">
           <children>
-            <Button mnemonicParsing="false" onAction="#loadBookmark" prefWidth="60.0" text="Load" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <Button mnemonicParsing="false" onAction="#removeBookmark" prefWidth="60.0" text="Remove" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <Button fx:id="loadBtn" mnemonicParsing="false" onAction="#loadBookmark" prefWidth="60.0" text="Load" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <Button fx:id="removeBtn" mnemonicParsing="false" onAction="#removeBookmark" prefWidth="60.0" text="Remove" GridPane.columnIndex="1" GridPane.rowIndex="0" />
             <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
               <content>
                 <ListView fx:id="bookmarkListView" prefHeight="200.0" prefWidth="200.0" />
