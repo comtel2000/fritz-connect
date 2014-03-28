@@ -1,37 +1,11 @@
 package org.comtel.fritz.connect.service;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.comtel.fritz.connect.FritzUtils;
 import org.comtel.fritz.connect.XmlUtils;
 import org.comtel.fritz.connect.cmd.SwitchCmd;
@@ -40,6 +14,20 @@ import org.comtel.fritz.connect.exception.ServiceNotSupportedException;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.net.ssl.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class SwitchService {
 
@@ -79,19 +67,13 @@ public class SwitchService {
 	 */
 	public SwitchService() {
 
-		hostProperty.addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue<? extends String> arg0, String arg1, String arg2) {
-				invalidateSidCache();
-			}
-		});
+		hostProperty.addListener((arg0, arg1, arg2) -> {
+            invalidateSidCache();
+        });
 
-		portProperty.addListener(new ChangeListener<Number>() {
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				invalidateSidCache();
-			}
-		});
+		portProperty.addListener((observable, oldValue, newValue) -> {
+            invalidateSidCache();
+        });
 
 		sslProperty.addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -158,13 +140,10 @@ public class SwitchService {
 		sc.init(null, trustAllCerts, new java.security.SecureRandom());
 
 		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		HostnameVerifier allHostsValid = new HostnameVerifier() {
-			@Override
-			public boolean verify(String host, SSLSession session) {
-				logger.warn("auto verify host: {}", host);
-				return true;
-			}
-		};
+		HostnameVerifier allHostsValid = (host, session) -> {
+            logger.warn("auto verify host: {}", host);
+            return true;
+        };
 		HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 	}
 
@@ -256,7 +235,7 @@ public class SwitchService {
 
 	}
 
-	private final HttpURLConnection createConnection(String path) throws MalformedURLException, IOException {
+	private HttpURLConnection createConnection(String path) throws MalformedURLException, IOException {
 		URL url = new URL(protocolProperty.get(), getHost(), portProperty.get(), path);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		logger.debug("Sending request to URL: {}", url);

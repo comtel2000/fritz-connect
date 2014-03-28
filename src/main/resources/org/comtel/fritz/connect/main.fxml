@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.net.*?>
-<?import java.util.*?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-
+<?import java.net.URL?>
 <BorderPane id="root" prefHeight="312.0" prefWidth="604.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.comtel.fritz.connect.MainController">
   <bottom>
     <ToolBar id="statusBar" minHeight="21.0" prefHeight="21.0" prefWidth="600.0" styleClass="bottom">

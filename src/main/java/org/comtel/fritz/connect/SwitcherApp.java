@@ -1,15 +1,12 @@
 package org.comtel.fritz.connect;
 
-import org.comtel.fritz.connect.service.SwitchService;
-
 import javafx.application.Application;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import org.comtel.fritz.connect.service.SwitchService;
 
 public class SwitcherApp extends Application {
 
@@ -40,15 +37,12 @@ public class SwitcherApp extends Application {
 		stage.setScene(scene);
 		stage.show();
 
-		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			@Override
-			public void handle(WindowEvent event) {
-				sceneWidthProperty.set(scene.getWidth());
-				sceneHeightProperty.set(scene.getHeight());
+		stage.setOnCloseRequest(event -> {
+            sceneWidthProperty.set(scene.getWidth());
+            sceneHeightProperty.set(scene.getHeight());
 
-				sessionManager.saveSession();
-			}
-		});
+            sessionManager.saveSession();
+        });
 
 	}
 

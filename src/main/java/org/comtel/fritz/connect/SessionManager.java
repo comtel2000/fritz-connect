@@ -31,46 +31,30 @@
  */
 package org.comtel.fritz.connect;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Properties;
-
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.paint.Color;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
 import org.comtel.fritz.connect.bookmark.Bookmark;
 import org.comtel.fritz.connect.bookmark.Bookmarks;
 import org.comtel.fritz.connect.bookmark.ObjectFactory;
 import org.comtel.fritz.connect.device.SwitchDevice;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
+import java.nio.file.*;
+import java.util.Properties;
 
 public class SessionManager {
 
@@ -155,13 +139,9 @@ public class SessionManager {
 		if (value != null) {
 			property.set(Boolean.valueOf(value));
 		}
-		property.addListener(new InvalidationListener() {
-
-			@Override
-			public void invalidated(Observable o) {
-				props.setProperty(propertyName, property.getValue().toString());
-			}
-		});
+		property.addListener(o -> {
+            props.setProperty(propertyName, property.getValue().toString());
+        });
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,13 +156,9 @@ public class SessionManager {
 				((ObjectProperty<Object>) property).set(value);
 			}
 		}
-		property.addListener(new InvalidationListener() {
-
-			@Override
-			public void invalidated(Observable o) {
-				props.setProperty(propertyName, property.getValue().toString());
-			}
-		});
+		property.addListener(o -> {
+            props.setProperty(propertyName, property.getValue().toString());
+        });
 	}
 
 	public void bind(final DoubleProperty property, final String propertyName) {
@@ -190,13 +166,9 @@ public class SessionManager {
 		if (value != null) {
 			property.set(Double.valueOf(value));
 		}
-		property.addListener(new InvalidationListener() {
-
-			@Override
-			public void invalidated(Observable o) {
-				props.setProperty(propertyName, property.getValue().toString());
-			}
-		});
+		property.addListener(o -> {
+            props.setProperty(propertyName, property.getValue().toString());
+        });
 	}
 
 	public void bind(final ToggleGroup toggleGroup, final String propertyName) {
@@ -208,17 +180,13 @@ public class SessionManager {
 			}
 		} catch (Exception ignored) {
 		}
-		toggleGroup.selectedToggleProperty().addListener(new InvalidationListener() {
-
-			@Override
-			public void invalidated(Observable o) {
-				if (toggleGroup.getSelectedToggle() == null) {
-					props.remove(propertyName);
-				} else {
-					props.setProperty(propertyName, Integer.toString(toggleGroup.getToggles().indexOf(toggleGroup.getSelectedToggle())));
-				}
-			}
-		});
+		toggleGroup.selectedToggleProperty().addListener(o -> {
+            if (toggleGroup.getSelectedToggle() == null) {
+                props.remove(propertyName);
+            } else {
+                props.setProperty(propertyName, Integer.toString(toggleGroup.getToggles().indexOf(toggleGroup.getSelectedToggle())));
+            }
+        });
 	}
 
 	public void bind(final Accordion accordion, final String propertyName) {
@@ -229,15 +197,11 @@ public class SessionManager {
 				break;
 			}
 		}
-		accordion.expandedPaneProperty().addListener(new ChangeListener<TitledPane>() {
-
-			@Override
-			public void changed(ObservableValue<? extends TitledPane> ov, TitledPane t, TitledPane expandedPane) {
-				if (expandedPane != null) {
-					props.setProperty(propertyName, expandedPane.getText());
-				}
-			}
-		});
+		accordion.expandedPaneProperty().addListener((ov, t, expandedPane) -> {
+            if (expandedPane != null) {
+                props.setProperty(propertyName, expandedPane.getText());
+            }
+        });
 	}
 
 	public void bind(final StringProperty property, final String propertyName) {
@@ -246,12 +210,9 @@ public class SessionManager {
 			property.set(value);
 		}
 
-		property.addListener(new InvalidationListener() {
-			@Override
-			public void invalidated(Observable o) {
-				props.setProperty(propertyName, property.getValue());
-			}
-		});
+		property.addListener(o -> {
+            props.setProperty(propertyName, property.getValue());
+        });
 	}
 
 	/**
@@ -273,19 +234,15 @@ public class SessionManager {
 			}
 		}
 
-		property.addListener(new InvalidationListener() {
-
-			@Override
-			public void invalidated(Observable o) {
-				if (property.getValue() == null || property.getValue().isEmpty()) {
-					props.setProperty(propertyName, "");
-				} else {
-					StandardPBEStringEncryptor enc = new StandardPBEStringEncryptor();
-					enc.setPassword("X4E8SS09cw_Qq812");
-					props.setProperty(propertyName, enc.encrypt(property.getValue()));
-				}
-			}
-		});
+		property.addListener(o -> {
+            if (property.getValue() == null || property.getValue().isEmpty()) {
+                props.setProperty(propertyName, "");
+            } else {
+                StandardPBEStringEncryptor enc = new StandardPBEStringEncryptor();
+                enc.setPassword("X4E8SS09cw_Qq812");
+                props.setProperty(propertyName, enc.encrypt(property.getValue()));
+            }
+        });
 	}
 
 	public final ObservableList<SwitchDevice> getSwitchDeviceList() {

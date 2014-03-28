@@ -110,21 +110,7 @@ public class SwitchDevice implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("SwitchDevice [ain=");
-		builder.append(ain);
-		builder.append(", name=");
-		builder.append(name);
-		builder.append(", present=");
-		builder.append(present);
-		builder.append(", state=");
-		builder.append(state);
-		builder.append(", power=");
-		builder.append(power);
-		builder.append(", energy=");
-		builder.append(energy);
-		builder.append("]");
-		return builder.toString();
+        return "SwitchDevice [ain=" + ain + ", name=" + name + ", present=" + present + ", state=" + state + ", power=" + power + ", energy=" + energy + "]";
 	}
 
 	public boolean isPresent() {
