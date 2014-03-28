@@ -1,5 +1,5 @@
 fritz-connect (SwitcherApp)
-========
+===========================
 
 [![Build Status](https://travis-ci.org/comtel2000/fritz-connect.png)](https://travis-ci.org/comtel2000/fritz-connect)
 

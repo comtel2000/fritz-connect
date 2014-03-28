@@ -1,21 +1,35 @@
 package org.comtel.fritz.connect;
 
-import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import org.comtel.fritz.connect.bookmark.Bookmark;
-import org.controlsfx.dialog.Dialogs;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.util.Callback;
+
+import org.comtel.fritz.connect.bookmark.Bookmark;
+import org.controlsfx.dialog.Dialogs;
+import org.slf4j.LoggerFactory;
 
 public class SettingsController implements Initializable {
 
@@ -53,39 +67,48 @@ public class SettingsController implements Initializable {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 
-		settingsPane.expandedPaneProperty().addListener((observable, oldValue, newValue) -> {
-            Platform.runLater(() -> {
-                if (settingsPane.getExpandedPane() == null)
-                    settingsPane.setExpandedPane(settingsPane.getPanes().get(0));
-            });
-        });
+		settingsPane.expandedPaneProperty().addListener(new ChangeListener<TitledPane>() {
+			@Override
+			public void changed(ObservableValue<? extends TitledPane> observable, TitledPane oldValue, TitledPane newValue) {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						if (settingsPane.getExpandedPane() == null)
+							settingsPane.setExpandedPane(settingsPane.getPanes().get(0));
+					}
+				});
+			}
+		});
 
-		portField.textProperty().addListener((observable, oldValue, port) -> {
+		portField.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String port) {
 
-            if (port == null || port.isEmpty()) {
-                SwitcherApp.getSwitchService().getPortProperty().set(-1);
-                return;
-            }
+				if (port == null || port.isEmpty()) {
+					SwitcherApp.getSwitchService().getPortProperty().set(-1);
+					return;
+				}
 
-            if (port.length() > 5) {
-                portField.setText(port.substring(0, 5));
-            }
+				if (port.length() > 5) {
+					portField.setText(port.substring(0, 5));
+				}
 
-            if (!port.matches("[0-9]{0,5}")) {
-                if (oldValue.matches("[0-9]{0,5}")) {
-                    portField.setText(oldValue);
-                } else {
-                    portField.setText("");
-                }
-                return;
-            }
+				if (!port.matches("[0-9]{0,5}")) {
+					if (oldValue.matches("[0-9]{0,5}")) {
+						portField.setText(oldValue);
+					} else {
+						portField.setText("");
+					}
+					return;
+				}
 
-            try {
-                SwitcherApp.getSwitchService().getPortProperty().set(Integer.valueOf(port));
-            } catch (NumberFormatException e) {
-                logger.error(e.getMessage(), e);
-            }
-        });
+				try {
+					SwitcherApp.getSwitchService().getPortProperty().set(Integer.valueOf(port));
+				} catch (NumberFormatException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+		});
 
 		SessionManager sessionManager = SessionManager.getSessionManager();
 
@@ -105,15 +128,23 @@ public class SettingsController implements Initializable {
 		bookmarkListView.setItems(sessionManager.getBookmarks());
 		bookmarkListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-		bookmarkListView.setCellFactory(param -> new BookmarkCell());
+		bookmarkListView.setCellFactory(new Callback<ListView<Bookmark>, ListCell<Bookmark>>() {
+			@Override
+			public ListCell<Bookmark> call(ListView<Bookmark> param) {
+				return new BookmarkCell();
+			}
+		});
 
-		bookmarkListView.setOnMouseClicked((MouseEvent mouseEvent) -> {
-            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-                if (mouseEvent.getClickCount() == 2) {
-                    loadBookmark(null);
-                }
-            }
-        });
+		bookmarkListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent mouseEvent) {
+				if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+					if (mouseEvent.getClickCount() == 2) {
+						loadBookmark(null);
+					}
+				}
+			}
+		});
 		loadBtn.disableProperty().bind(bookmarkListView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
 		removeBtn.disableProperty().bind(bookmarkListView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
 
@@ -122,11 +153,12 @@ public class SettingsController implements Initializable {
 	private class BookmarkCell extends ListCell<Bookmark> {
 
 		public BookmarkCell() {
-			itemProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    textProperty().set(newValue.getId());
-                }
-            });
+			itemProperty().addListener(new ChangeListener<Bookmark>() {
+				@Override
+				public void changed(ObservableValue<? extends Bookmark> observable, Bookmark oldValue, Bookmark newValue) {
+					textProperty().set(newValue != null ? newValue.getId() : "");
+				}
+			});
 		}
 
 	}
@@ -150,12 +182,6 @@ public class SettingsController implements Initializable {
 		Bookmark bm = bookmarkListView.getSelectionModel().getSelectedItem();
 		if (bm != null) {
 			bookmarkListView.getItems().remove(bm);
-
-			// repaint bug?
-			Bookmark bugFix = new Bookmark();
-			bookmarkListView.getItems().add(bugFix);
-			bookmarkListView.getItems().remove(bugFix);
-
 		}
 	}
 
@@ -165,17 +191,24 @@ public class SettingsController implements Initializable {
 		TestConnectionService service = new TestConnectionService();
 
 		settingsPane.disableProperty().bind(service.runningProperty());
-		service.setOnSucceeded(t -> {
-            Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION").masthead("Response ok from URL: " + SwitcherApp.getSwitchService().getURL())
-                    .message("try to refresh smart home devices").showInformation();
-        });
-		service.setOnFailed(t -> {
-            Throwable e = t.getSource().getException();
-            String msg = e != null ? e.getMessage() : "general error";
-Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION ERROR").masthead("Test connection fails! URL: " + SwitcherApp.getSwitchService().getURL())
-                    .message(msg).showExceptionInNewWindow(e);
-            logger.error("test host connection failed", e);
-        });
+		service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION").masthead("Response ok from URL: " + SwitcherApp.getSwitchService().getURL())
+						.message("try to refresh smart home devices").showInformation();
+			}
+		});
+		service.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				Throwable e = t.getSource().getException();
+				String msg = e != null ? e.getMessage() : "general error";
+				;
+				Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("CONNECTION ERROR").masthead("Test connection fails! URL: " + SwitcherApp.getSwitchService().getURL())
+						.message(msg).showExceptionInNewWindow(e);
+				logger.error("test host connection failed", e);
+			}
+		});
 		service.start();
 	}
 
