@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.net.URL?>
+<?import javafx.geometry.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.net.URL?>
+
 <BorderPane id="root" prefHeight="312.0" prefWidth="604.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.comtel.fritz.connect.MainController">
   <bottom>
     <ToolBar id="statusBar" minHeight="21.0" prefHeight="21.0" prefWidth="600.0" styleClass="bottom">
@@ -24,6 +28,7 @@
         <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
           <items>
             <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#refreshAll" pickOnBounds="false" text="Refresh All" />
+            <ProgressIndicator fx:id="progress" maxHeight="15.0" maxWidth="15.0" minHeight="-1.0" prefHeight="15.0" prefWidth="15.0" progress="-1.0" visible="false" />
           </items>
         </ToolBar>
         <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">

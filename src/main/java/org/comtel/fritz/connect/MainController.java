@@ -48,6 +48,9 @@ public class MainController implements Initializable {
 	SplitPane splitPane;
 
 	@FXML
+	ProgressIndicator progress;
+	
+	@FXML
 	Button refreshBtn;
 
 	@FXML
@@ -159,7 +162,9 @@ public class MainController implements Initializable {
 
 		DeviceListRequest service = new DeviceListRequest();
 		refreshBtn.disableProperty().bind(service.runningProperty());
-
+		progress.visibleProperty().bind(service.runningProperty());
+		switcherPanel.disableProperty().bind(service.runningProperty());
+		
 		service.setOnSucceeded(t -> {
             sessionManager.getSwitchDeviceList().clear();
             sessionManager.getSwitchDeviceList().addAll((Collection<SwitchDevice>) t.getSource().getValue());
