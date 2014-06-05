@@ -1,23 +1,5 @@
 package org.comtel.fritz.connect.service;
 
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import org.comtel.fritz.connect.FritzUtils;
-import org.comtel.fritz.connect.XmlUtils;
-import org.comtel.fritz.connect.cmd.SwitchCmd;
-import org.comtel.fritz.connect.device.SwitchDevice;
-import org.comtel.fritz.connect.exception.ServiceNotSupportedException;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import javax.net.ssl.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -26,8 +8,36 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.comtel.fritz.connect.FritzUtils;
+import org.comtel.fritz.connect.XmlUtils;
+import org.comtel.fritz.connect.cmd.SwitchCmd;
+import org.comtel.fritz.connect.device.SwitchDevice;
+import org.comtel.fritz.connect.exception.ServiceNotSupportedException;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 public class SwitchService {
 
@@ -75,17 +85,14 @@ public class SwitchService {
             invalidateSidCache();
         });
 
-		sslProperty.addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean ssl) {
-				protocolProperty.set(ssl ? "https" : "http");
-				invalidateSidCache();
-				if (ssl) {
-					try {
-						trustAllSslCertificate();
-					} catch (KeyManagementException | NoSuchAlgorithmException e) {
-						logger.error(e.getMessage(), e);
-					}
+		sslProperty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean ssl) -> {
+			protocolProperty.set(ssl ? "https" : "http");
+			invalidateSidCache();
+			if (ssl) {
+				try {
+					trustAllSslCertificate();
+				} catch (KeyManagementException | NoSuchAlgorithmException e) {
+					logger.error(e.getMessage(), e);
 				}
 			}
 		});
@@ -129,10 +136,12 @@ public class SwitchService {
 
 			@Override
 			public void checkServerTrusted(X509Certificate[] c, String s) throws CertificateException {
+				logger.debug("ServerTrusted authType: {}", s);
 			}
 
 			@Override
 			public void checkClientTrusted(X509Certificate[] c, String s) throws CertificateException {
+				logger.debug("ClientTrusted authType: {}", s);
 			}
 		} };
 
@@ -152,12 +161,9 @@ public class SwitchService {
 	}
 
 	private String sendSwitchCmd(String ain, String switchcmd, String sid) throws MalformedURLException, IOException, ServiceNotSupportedException {
-		final String path;
-		if (ain == null) {
-			path = String.format(SID_SWITCHCMD_URL, switchcmd, sid);
-		} else {
-			path = String.format(SID_AIN_SWITCHCMD_URL, ain, switchcmd, sid);
-		}
+		
+		String path = (ain == null) ? String.format(SID_SWITCHCMD_URL, switchcmd, sid) : String.format(SID_AIN_SWITCHCMD_URL, ain, switchcmd, sid);
+
 		logger.debug("send: {}", path);
 		HttpURLConnection con = createConnection(path);
 
@@ -278,28 +284,21 @@ public class SwitchService {
 	}
 
 	public Collection<SwitchDevice> getSwitchDevices() throws ServiceNotSupportedException, Exception {
-		String sid = getCachedSessionId();
-		Set<SwitchDevice> deviceList = new HashSet<>();
-		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, sid);
-		if (resp == null || resp.isEmpty()){
-			return deviceList;
-		}
-		List<String> ainList = Arrays.asList(resp.split(","));
-		logger.info("GETSWITCHLIST: {}", ainList);
 
-		for (String ain : ainList) {
-			if (ain == null || ain.isEmpty()){
-				logger.warn("empty AIN code detected");
-				continue;
-			}
-			if (!deviceList.add(new SwitchDevice(ain))) {
-				logger.error("double ain: {} detected", ain);
-			}
+		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, getCachedSessionId());
+		if (resp == null || resp.isEmpty()){
+			return Collections.emptySet();
 		}
-		for (final SwitchDevice dev : deviceList) {
-			refreshSwitchDevice(dev);
-			logger.info("updated: {}", dev);
-		}
+		Set<SwitchDevice> deviceList = Arrays.asList(resp.split(",")).stream().filter((t) -> t != null && !t.isEmpty()).map((t) -> new SwitchDevice(t)).collect(Collectors.toSet());
+
+		deviceList.forEach((dev) -> {
+			try {
+				refreshSwitchDevice(dev);
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+		});
+
 		return deviceList;
 
 	}

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import java.net.URL?>
@@ -8,45 +9,37 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane id="root" prefHeight="312.0" prefWidth="604.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.comtel.fritz.connect.MainController">
+<BorderPane id="root" prefHeight="312.0" prefWidth="604.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.comtel.fritz.connect.MainController">
   <bottom>
-    <ToolBar id="statusBar" minHeight="21.0" prefHeight="21.0" prefWidth="600.0" styleClass="bottom">
-      <items>
-        <Label fx:id="status" text="Status" />
-      </items>
-    </ToolBar>
+      <HBox spacing="10.0" styleClass="status-bar">
+         <children>
+        <Label fx:id="status" text="Status" HBox.hgrow="ALWAYS" />
+         </children>
+         <padding>
+            <Insets bottom="2.0" left="5.0" right="5.0" top="2.0" />
+         </padding>
+      </HBox>
   </bottom>
   <center>
-    <SplitPane fx:id="splitPane" dividerPositions="" focusTraversable="true" prefHeight="370.0" prefWidth="600.0" />
+    <SplitPane fx:id="splitPane" focusTraversable="true" prefHeight="370.0" prefWidth="600.0" />
   </center>
   <stylesheets>
     <URL value="@main.css" />
   </stylesheets>
   <top>
-    <GridPane id="GridPane" gridLinesVisible="false" hgap="0.0" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefHeight="33.0" prefWidth="-1.0" BorderPane.alignment="CENTER_RIGHT">
-      <children>
-        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
-          <items>
-            <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#refreshAll" pickOnBounds="false" text="Refresh All" />
-            <ProgressIndicator fx:id="progress" maxHeight="15.0" maxWidth="15.0" minHeight="-1.0" prefHeight="15.0" prefWidth="15.0" progress="-1.0" visible="false" />
-          </items>
-        </ToolBar>
-        <ToolBar maxHeight="-Infinity" minHeight="-Infinity" prefHeight="33.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES">
-          <items>
-            <ToggleButton fx:id="settingsBtn" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="-1.0" prefWidth="80.0" selected="true" text="Settings" textAlignment="LEFT" />
-          </items>
-        </ToolBar>
-      </children>
-      <columnConstraints>
-        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="-1.0" minWidth="-Infinity" prefWidth="-1.0" />
-        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="-1.0" />
-      </columnConstraints>
-      <rowConstraints>
-        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-      </rowConstraints>
-      <BorderPane.margin>
-        <Insets />
-      </BorderPane.margin>
-    </GridPane>
+      <HBox alignment="CENTER" spacing="10.0" styleClass="tool-bar">
+         <children>
+      <Button fx:id="refreshBtn" defaultButton="true" mnemonicParsing="false" onAction="#refreshAll" pickOnBounds="false" text="Refresh All" />
+      <ProgressIndicator fx:id="progress" maxHeight="15.0" maxWidth="15.0" minHeight="-1.0" prefHeight="15.0" prefWidth="15.0" progress="-1.0" visible="false" />
+            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+      <ToggleButton fx:id="settingsBtn" mnemonicParsing="false" onAction="#toggleSettings" prefHeight="-1.0" prefWidth="80.0" selected="true" text="Settings" textAlignment="LEFT" />
+         </children>
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </HBox>
   </top>
 </BorderPane>

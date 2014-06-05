@@ -2,6 +2,7 @@ package org.comtel.fritz.connect;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
@@ -227,14 +228,18 @@ public class SettingsController implements Initializable {
 	@FXML
 	public void addBookmark(ActionEvent event) {
 
-		String id = Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("ADD BOOKMARK").masthead("Insert connection name:").showTextInput(ipField.getText());
+		Optional<String> id = Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("ADD BOOKMARK").masthead("Insert connection name:").showTextInput(ipField.getText());
 
-		if (id == null || id.isEmpty()) {
-			Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("ADD BOOKMARK").masthead("Connection name invalid!").showError();
+		if (!id.isPresent()){
+			//cancel
+			return;
+		}
+		if (id.get().trim().isEmpty()) {
+			Dialogs.create().owner(testBtn.getScene().getWindow()).lightweight().title("ADD BOOKMARK").masthead("Connection name: '"+id+"' invalid!").showError();
 			return;
 		}
 		Bookmark bm = new Bookmark();
-		bm.setId(id);
+		bm.setId(id.get());
 		bm.setIp(ipField.getText());
 		String port = portField.getText();
 		bm.setPort(Integer.valueOf(port != null && !port.isEmpty() ? port : "0"));

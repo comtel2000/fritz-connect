@@ -43,10 +43,21 @@
     -fx-default-button:  #00ff00;
 }
 
-#statusBar .text {
+
+.status-bar {
+    -fx-background-color:
+        -fx-shadow-highlight-color,
+        -fx-outer-border,
+        -fx-inner-border,
+        -fx-body-color,
+        linear-gradient(to bottom, derive(-fx-outer-border, -20%), -fx-outer-border),
+        linear-gradient(to bottom, derive(-fx-color, -22%) 0%, derive(-fx-color, -13%) 20%, derive(-fx-color, -11%) 50%);
+}
+     
+.status-bar .text {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-fill: #1d3866;
+    -fx-fill: #3f3f3f;
     -fx-effect: dropshadow(one-pass-box, white, 0, 1.0, 0, 1);
 }
 

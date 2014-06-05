@@ -1,14 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?scenebuilder-stylesheet main.css?>
-
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.geometry.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<Accordion fx:id="settingsPane" styleClass="settings, settings-header" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.comtel.fritz.connect.SettingsController">
-  <expandedPane>
-    <TitledPane fx:id="x1" animated="false" text="Bookmarks">
+
+<Accordion fx:id="settingsPane" styleClass="settings, settings-header" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.comtel.fritz.connect.SettingsController">
+  <panes>
+    <TitledPane animated="false" text="FritzBox settings" fx:id="x3">
+      <content>
+            <ScrollPane fitToWidth="true" prefViewportWidth="340.0">
+               <content>
+            <GridPane hgap="10.0" vgap="10.0">
+              <children>
+                <Label text="Host (IP):" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label text="Port:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label text="SSL/TLS:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <TextField fx:id="ipField" promptText="fritz.box" text="fritz.box" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <TextField fx:id="portField" promptText="default" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <CheckBox fx:id="sslCheckBox" mnemonicParsing="false" text="" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Button fx:id="testBtn" mnemonicParsing="false" onAction="#testConnection" text="Test connection" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                <Label prefWidth="-1.0" text="User:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label prefWidth="-1.0" text="Password:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <TextField id="portField" fx:id="userField" prefWidth="200.0" promptText="" text="" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <PasswordField fx:id="pwdField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Button id="testBtn" mnemonicParsing="false" onAction="#resetFields" text="Reset" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <Button id="bookBtn" mnemonicParsing="false" onAction="#addBookmark" text="Add Bookmark" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+              </children>
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-1.0" minWidth="110.0" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="50.0" />
+              </columnConstraints>
+              <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" fx:id="x2" />
+              </padding>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+            </GridPane>
+               </content>
+            </ScrollPane>
+      </content>
+    </TitledPane>
+    <TitledPane animated="false" text="Bookmarks" fx:id="x1">
       <content>
         <GridPane id="GridPane" hgap="5.0" vgap="5.0">
           <children>
@@ -34,50 +78,6 @@
         </GridPane>
       </content>
     </TitledPane>
-  </expandedPane>
-  <panes>
-    <TitledPane fx:id="x3" animated="false" text="FritzBox settings">
-      <content>
-        <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
-          <content>
-            <GridPane hgap="10.0" vgap="10.0">
-              <children>
-                <Label text="Host (IP):" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <Label text="Port:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <Label text="SSL/TLS:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <TextField fx:id="ipField" prefWidth="200.0" promptText="fritz.box" text="fritz.box" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                <TextField fx:id="portField" prefWidth="200.0" promptText="default" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <CheckBox fx:id="sslCheckBox" mnemonicParsing="false" text="" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Button fx:id="testBtn" mnemonicParsing="false" onAction="#testConnection" text="Test connection" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                <Label prefWidth="-1.0" text="User:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <Label prefWidth="-1.0" text="Password:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <TextField id="portField" fx:id="userField" prefWidth="200.0" promptText="" text="" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <PasswordField fx:id="pwdField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <Button id="testBtn" mnemonicParsing="false" onAction="#resetFields" text="Reset" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <Button id="bookBtn" mnemonicParsing="false" onAction="#addBookmark" text="Add Bookmark" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-              </children>
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-1.0" minWidth="10.0" prefWidth="110.0" />
-                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="50.0" prefWidth="90.0" />
-              </columnConstraints>
-              <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" fx:id="x2" />
-              </padding>
-              <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
-          </content>
-        </ScrollPane>
-      </content>
-    </TitledPane>
-    <fx:reference source="x1" />
   </panes>
   <stylesheets>
     <URL value="@main.css" />
