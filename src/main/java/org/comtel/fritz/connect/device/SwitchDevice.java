@@ -19,7 +19,6 @@ public class SwitchDevice implements Serializable {
 	private int energy;
 	private int temperature;
 
-	
 	private boolean present;
 
 	public SwitchDevice(String ain) {
@@ -85,6 +84,22 @@ public class SwitchDevice implements Serializable {
 		}
 	}
 
+	public boolean isPresent() {
+		return present;
+	}
+
+	public void setPresent(boolean present) {
+		this.present = present;
+	}
+
+	public int getTemperature() {
+		return temperature;
+	}
+
+	public void setTemperature(int temperature) {
+		this.temperature = temperature;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -112,23 +127,6 @@ public class SwitchDevice implements Serializable {
 
 	@Override
 	public String toString() {
-        return "SwitchDevice [ain=" + ain + ", name=" + name + ", present=" + present + ", state=" + state + ", power=" + power + ", energy=" + energy + ", temp.=" + temperature + "]";
+		return "SwitchDevice [ain=" + ain + ", name=" + name + ", present=" + present + ", state=" + state + ", power=" + power + ", energy=" + energy + ", temp.=" + temperature + "]";
 	}
-
-	public boolean isPresent() {
-		return present;
-	}
-
-	public void setPresent(boolean present) {
-		this.present = present;
-	}
-
-	public int getTemperature() {
-		return temperature;
-	}
-
-	public void setTemperature(int temperature) {
-		this.temperature = temperature;
-	}
-
 }

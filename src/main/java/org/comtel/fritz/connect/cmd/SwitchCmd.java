@@ -1,6 +1,9 @@
 package org.comtel.fritz.connect.cmd;
 
 /**
+ * switchcmd tag
+ * <p>
+ * 
  * @see <a
  *      href="http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AHA-HTTP-Interface.pdf">http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AHA-HTTP-Interface.pdf</a>
  * 
@@ -24,6 +27,11 @@ public interface SwitchCmd {
 	 * Schaltet Steckdose aus "0"
 	 */
 	final String SETSWITCHOFF = "setswitchoff";
+
+	/**
+	 * Toggeln der Steckdose ein/aus "0" oder "1" (Steckdose aus oder an)
+	 */
+	final String SETSWITCHTOOGLE = "setswitchtoggle";
 
 	/**
 	 * Ermittelt Schaltzustand der Steckdose "0" oder "1" (Steckdose aus oder
@@ -57,7 +65,8 @@ public interface SwitchCmd {
 	final String GETSWITCHNAME = "getswitchname";
 
 	/**
-	 * XML device informations
+	 * Liefert die grundlegenden Informationen aller SmartHome-Geräte XML-Format
+	 * mit grundlegenden und funktionsspezifischen Informationen
 	 */
 	final String GETDEVICELISTINFOS = "getdevicelistinfos";
 

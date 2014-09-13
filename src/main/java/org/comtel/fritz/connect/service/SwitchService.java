@@ -309,31 +309,30 @@ public class SwitchService {
 
 	public Collection<SwitchDevice> getSwitchDevices() throws ServiceNotSupportedException, Exception {
 
+		Set<SwitchDevice> deviceList = new HashSet<>();
+
 		String sid = getCachedSessionId();
 		Devicelist devList = getDevicelist(sid);
-		if (devList == null) {
-			return Collections.emptySet();
-		}
+		if (devList != null) {
+			for (Device d : devList.getDevice()) {
+				if (d.getSwitch() == null) {
+					logger.debug("skip dev: {}", d.getIdentifier());
+					continue;
+				}
+				SwitchDevice dev = new SwitchDevice(d.getIdentifier());
+				dev.setName(d.getName());
+				dev.setPresent(d.isPresent());
+				dev.setState(d.getSwitch().getState());
 
-		Set<SwitchDevice> deviceList = new HashSet<>();
-		for (Device d : devList.getDevice()) {
-			if (d.getSwitch() == null) {
-				logger.debug("skip dev: {}", d.getIdentifier());
-				continue;
+				if (d.getPowermeter() != null) {
+					dev.setPower(d.getPowermeter().getPower());
+					dev.setEnergy(d.getPowermeter().getEnergy());
+				}
+				if (d.getTemperature() != null) {
+					dev.setTemperature(d.getTemperature().getCelsius() + d.getTemperature().getOffset());
+				}
+				deviceList.add(dev);
 			}
-			SwitchDevice dev = new SwitchDevice(d.getIdentifier());
-			dev.setName(d.getName());
-			dev.setPresent(d.isPresent());
-			dev.setState(d.getSwitch().getState());
-
-			if (d.getPowermeter() != null) {
-				dev.setPower(d.getPowermeter().getPower());
-				dev.setEnergy(d.getPowermeter().getEnergy());
-			}
-			if (d.getTemperature() != null) {
-				dev.setTemperature(d.getTemperature().getCelsius() + d.getTemperature().getOffset());
-			}
-			deviceList.add(dev);
 		}
 
 		// String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST,
@@ -341,7 +340,7 @@ public class SwitchService {
 		// if (resp == null || resp.isEmpty()) {
 		// return Collections.emptySet();
 		// }
-		// Set<SwitchDevice> deviceList =
+		// deviceList =
 		// Arrays.asList(resp.split(",")).stream().filter((t) -> t != null &&
 		// !t.isEmpty()).map((t) -> new
 		// SwitchDevice(t)).collect(Collectors.toSet());
@@ -380,64 +379,65 @@ public class SwitchService {
 		String sid = getCachedSessionId();
 
 		Devicelist devList = getDevicelist(sid);
-		if (devList == null) {
-			return;
+		if (devList != null) {
+			for (Device d : devList.getDevice()) {
+				if (!dev.getAin().equals(d.getIdentifier())) {
+					logger.debug("skip dev: {}", d.getIdentifier());
+					continue;
+				}
+
+				dev.setName(d.getName());
+				dev.setPresent(d.isPresent());
+				if (d.getSwitch() != null) {
+					dev.setState(d.getSwitch().getState());
+				}
+				if (d.getPowermeter() != null) {
+					dev.setPower(d.getPowermeter().getPower());
+					dev.setEnergy(d.getPowermeter().getEnergy());
+				}
+				if (d.getTemperature() != null) {
+					dev.setTemperature(d.getTemperature().getCelsius() + d.getTemperature().getOffset());
+				}
+			}
+		} else {
+
+			// dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(),
+			// SwitchCmd.GETSWITCHPRESENT, sid)));
+			// dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME,
+			// sid));
+			//
+			// if (!dev.isPresent()) {
+			// logger.debug("skip not present dev: {}", dev);
+			// return;
+			// }
+			//
+			// dev.setState(sendSwitchCmd(dev.getAin(),
+			// SwitchCmd.GETSWITCHSTATE,
+			// sid));
+			//
+			// if (dev.getAin().contains("-")) {
+			// logger.debug("skip updated group: {}", dev);
+			// return;
+			// }
+			// try {
+			// String power = sendSwitchCmd(dev.getAin(),
+			// SwitchCmd.GETSWITCHPOWER,
+			// sid);
+			// dev.setPower("inval".equals(power) ? 0 : Integer.valueOf(power));
+			// } catch (Exception e) {
+			// logger.error(e.getMessage(), e);
+			// dev.setPower(-1);
+			// }
+			// try {
+			// String energy = sendSwitchCmd(dev.getAin(),
+			// SwitchCmd.GETSWITCHENERGY, sid);
+			// dev.setEnergy("inval".equals(energy) ? 0 :
+			// Integer.valueOf(energy));
+			// } catch (Exception e) {
+			// logger.error(e.getMessage(), e);
+			// dev.setEnergy(-1);
+			// }
 		}
-
-		for (Device d : devList.getDevice()) {
-			if (!dev.getAin().equals(d.getIdentifier())) {
-				logger.debug("skip dev: {}", d.getIdentifier());
-				continue;
-			}
-
-			dev.setName(d.getName());
-			dev.setPresent(d.isPresent());
-			if (d.getSwitch() != null) {
-				dev.setState(d.getSwitch().getState());
-			}
-			if (d.getPowermeter() != null) {
-				dev.setPower(d.getPowermeter().getPower());
-				dev.setEnergy(d.getPowermeter().getEnergy());
-			}
-			if (d.getTemperature() != null) {
-				dev.setTemperature(d.getTemperature().getCelsius() + d.getTemperature().getOffset());
-			}
-		}
-
-		// dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(),
-		// SwitchCmd.GETSWITCHPRESENT, sid)));
-		// dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME,
-		// sid));
-		//
-		// if (!dev.isPresent()) {
-		// logger.debug("skip not present dev: {}", dev);
-		// return;
-		// }
-		//
-		// dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE,
-		// sid));
-		//
-		// if (dev.getAin().contains("-")) {
-		// logger.debug("skip updated group: {}", dev);
-		// return;
-		// }
-		// try {
-		// String power = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER,
-		// sid);
-		// dev.setPower("inval".equals(power) ? 0 : Integer.valueOf(power));
-		// } catch (Exception e) {
-		// logger.error(e.getMessage(), e);
-		// dev.setPower(-1);
-		// }
-		// try {
-		// String energy = sendSwitchCmd(dev.getAin(),
-		// SwitchCmd.GETSWITCHENERGY, sid);
-		// dev.setEnergy("inval".equals(energy) ? 0 : Integer.valueOf(energy));
-		// } catch (Exception e) {
-		// logger.error(e.getMessage(), e);
-		// dev.setEnergy(-1);
-		// }
-
 		logger.debug("updated: {}", dev);
 
 	}

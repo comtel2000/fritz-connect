@@ -97,14 +97,12 @@ public class MainController implements Initializable {
 
 	private void updateDeviceList(List<? extends SwitchDevice> list) {
 		switcherPanel.getChildren().clear();
-
 		list.forEach((dev) -> {
-
-			CheckBox cb = new CheckBox(String.format("%s\t[%.3f kWh, %.2f W, %.1f C]", dev.getName(), (dev.getEnergy() > 0 ? (double) dev.getEnergy() / 1000 : 0d),
-					dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d, dev.getTemperature() > 0 ? (double) dev.getTemperature() / 10 : 0d));
+			CheckBox cb = new CheckBox(String.format("%s\t[%s, %s, %s]", dev.getName(), FritzUtils.getEnergy(dev.getEnergy()), FritzUtils.getPower(dev.getPower()),
+					FritzUtils.getTemperature(dev.getTemperature())));
 			cb.setId(dev.getAin());
-			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nenergy:\t%.3f kWh\npower:\t%.2f W\ntemp:\t%.1f C", dev.getAin(), (dev.getEnergy() > 0 ? (double) dev.getEnergy() / 1000 : 0d),
-					dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d, dev.getTemperature() > 0 ? (double) dev.getTemperature() / 10 : 0d)));
+			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nenergy:\t%s\npower:\t%s\ntemp:\t%s", dev.getAin(), FritzUtils.getEnergy(dev.getEnergy()), FritzUtils.getPower(dev.getPower()),
+					FritzUtils.getTemperature(dev.getTemperature()))));
 			cb.setSelected(dev.getState() == State.ON);
 			cb.setDisable(!dev.isPresent());
 

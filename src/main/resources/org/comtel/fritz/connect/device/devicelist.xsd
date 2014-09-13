@@ -33,9 +33,9 @@
 									Bit 8: Temperatursensor
 									Bit 9: Schaltsteckdose
 									Bit 10: AVM DECT Repeater								</xs:documentation>							</xs:annotation>						</xs:attribute>
-						<xs:attribute type="xs:string" name="fwversion" use="optional" />
-						<xs:attribute type="xs:string" name="manufacturer" use="optional" />
-						<xs:attribute type="xs:string" name="productname" use="optional" />
+						<xs:attribute type="xs:string" name="fwversion" />
+						<xs:attribute type="xs:string" name="manufacturer" />
+						<xs:attribute type="xs:string" name="productname" />
 					</xs:complexType>
 				</xs:element>
 				<xs:element name="group" maxOccurs="unbounded" minOccurs="0">
@@ -48,7 +48,9 @@
 								<xs:complexType>
 									<xs:sequence>
 										<xs:element type="xs:int" name="masterdeviceid" />
-										<xs:element type="xs:int" name="members" />
+										<xs:element type="xs:string" name="members">
+											<xs:annotation>
+												<xs:documentation>interne ids der Gruppenmitglieder, kommasepariert												</xs:documentation>											</xs:annotation>										</xs:element>
 									</xs:sequence>
 								</xs:complexType>
 							</xs:element>
@@ -70,7 +72,7 @@
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>
-			<xs:attribute type="xs:int" name="version" />
+			<xs:attribute type="xs:string" name="version" />
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="switch">
