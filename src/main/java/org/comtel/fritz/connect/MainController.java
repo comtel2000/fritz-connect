@@ -100,11 +100,11 @@ public class MainController implements Initializable {
 
 		list.forEach((dev) -> {
 
-			CheckBox cb = new CheckBox(String.format("%s\t[%.3f kWh, %.2f W]", dev.getName(), (dev.getEnergy() > 0 ? (double) dev.getEnergy() / 1000 : 0d),
-					dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d));
+			CheckBox cb = new CheckBox(String.format("%s\t[%.3f kWh, %.2f W, %.1f C]", dev.getName(), (dev.getEnergy() > 0 ? (double) dev.getEnergy() / 1000 : 0d),
+					dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d, dev.getTemperature() > 0 ? (double) dev.getTemperature() / 10 : 0d));
 			cb.setId(dev.getAin());
-			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nenergy:\t%.3f kWh\npower:\t%.2f W", dev.getAin(), (dev.getEnergy() > 0 ? (double) dev.getEnergy() / 1000 : 0d),
-					dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d)));
+			cb.setTooltip(new Tooltip(String.format("ain:\t\t%s\nenergy:\t%.3f kWh\npower:\t%.2f W\ntemp:\t%.1f C", dev.getAin(), (dev.getEnergy() > 0 ? (double) dev.getEnergy() / 1000 : 0d),
+					dev.getPower() > 0 ? (double) dev.getPower() / 1000 : 0d, dev.getTemperature() > 0 ? (double) dev.getTemperature() / 10 : 0d)));
 			cb.setSelected(dev.getState() == State.ON);
 			cb.setDisable(!dev.isPresent());
 

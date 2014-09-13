@@ -1,0 +1,85 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="devicelist">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="device" maxOccurs="unbounded" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element type="xs:boolean" name="present" />
+							<xs:element type="xs:string" name="name" />
+							<xs:element minOccurs="0" ref="switch" />
+							<xs:element name="powermeter" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element type="xs:int" name="power" />
+										<xs:element type="xs:int" name="energy" />
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="temperature">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element type="xs:int" name="celsius" />
+										<xs:element type="xs:int" name="offset" />
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute type="xs:string" name="identifier" />
+						<xs:attribute type="xs:int" name="id" use="optional" />
+						<xs:attribute type="xs:int" name="functionbitmask">
+							<xs:annotation>
+								<xs:documentation>Bit 7: Energie Messgerät
+									Bit 8: Temperatursensor
+									Bit 9: Schaltsteckdose
+									Bit 10: AVM DECT Repeater								</xs:documentation>							</xs:annotation>						</xs:attribute>
+						<xs:attribute type="xs:string" name="fwversion" use="optional" />
+						<xs:attribute type="xs:string" name="manufacturer" use="optional" />
+						<xs:attribute type="xs:string" name="productname" use="optional" />
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="group" maxOccurs="unbounded" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="present" type="xs:boolean" />
+							<xs:element type="xs:string" name="name" />
+							<xs:element minOccurs="0" ref="switch" />
+							<xs:element name="groupinfo">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element type="xs:int" name="masterdeviceid" />
+										<xs:element type="xs:int" name="members" />
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute type="xs:string" name="identifier" />
+						<xs:attribute type="xs:int" name="id" />
+						<xs:attribute type="xs:int" name="functionbitmask">
+							<xs:annotation>
+								<xs:documentation>Bit 7: Energie Messgerät
+									Bit 8: Temperatursensor
+									Bit 9: Schaltsteckdose
+									Bit 10: AVM DECT Repeater
+								</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute type="xs:string" name="fwversion" />
+						<xs:attribute type="xs:string" name="manufacturer" />
+						<xs:attribute type="xs:string" name="productname" />
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute type="xs:int" name="version" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="switch">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="state" type="xs:string"></xs:element>
+				<xs:element name="mode" type="xs:string"></xs:element>
+				<xs:element name="lock" type="xs:boolean"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

@@ -1,5 +1,12 @@
 package org.comtel.fritz.connect.cmd;
 
+/**
+ * @see <a
+ *      href="http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AHA-HTTP-Interface.pdf">http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AHA-HTTP-Interface.pdf</a>
+ * 
+ * @author comtel
+ *
+ */
 public interface SwitchCmd {
 
 	/**
@@ -48,5 +55,10 @@ public interface SwitchCmd {
 	 * Liefert Bezeichner des Aktors Name
 	 */
 	final String GETSWITCHNAME = "getswitchname";
+
+	/**
+	 * XML device informations
+	 */
+	final String GETDEVICELISTINFOS = "getdevicelistinfos";
 
 }

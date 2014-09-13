@@ -1,9 +1,15 @@
 package org.comtel.fritz.connect.service;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.StandardOpenOption;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -11,6 +17,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -27,13 +34,21 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.comtel.fritz.connect.FritzUtils;
 import org.comtel.fritz.connect.XmlUtils;
+import org.comtel.fritz.connect.bookmark.Bookmarks;
+import org.comtel.fritz.connect.bookmark.ObjectFactory;
 import org.comtel.fritz.connect.cmd.SwitchCmd;
 import org.comtel.fritz.connect.device.SwitchDevice;
+import org.comtel.fritz.connect.devicelist.Devicelist;
+import org.comtel.fritz.connect.devicelist.Devicelist.Device;
 import org.comtel.fritz.connect.exception.ServiceNotSupportedException;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -68,6 +83,15 @@ public class SwitchService {
 
 	private final DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
 
+	private JAXBContext deviceListContext;
+
+	private JAXBContext getDeviceListContext() throws JAXBException {
+		if (deviceListContext == null) {
+			deviceListContext = JAXBContext.newInstance(Devicelist.class);
+		}
+		return deviceListContext;
+	}
+
 	/**
 	 * FRITZ!BOX firmware >= FRITZ!OS 05.55 (homeautoswitch.lua)
 	 * <p>
@@ -78,12 +102,12 @@ public class SwitchService {
 	public SwitchService() {
 
 		hostProperty.addListener((arg0, arg1, arg2) -> {
-            invalidateSidCache();
-        });
+			invalidateSidCache();
+		});
 
 		portProperty.addListener((observable, oldValue, newValue) -> {
-            invalidateSidCache();
-        });
+			invalidateSidCache();
+		});
 
 		sslProperty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean ssl) -> {
 			protocolProperty.set(ssl ? "https" : "http");
@@ -150,9 +174,9 @@ public class SwitchService {
 
 		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		HostnameVerifier allHostsValid = (host, session) -> {
-            logger.warn("auto verify host: {}", host);
-            return true;
-        };
+			logger.warn("auto verify host: {}", host);
+			return true;
+		};
 		HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 	}
 
@@ -161,7 +185,7 @@ public class SwitchService {
 	}
 
 	private String sendSwitchCmd(String ain, String switchcmd, String sid) throws MalformedURLException, IOException, ServiceNotSupportedException {
-		
+
 		String path = (ain == null) ? String.format(SID_SWITCHCMD_URL, switchcmd, sid) : String.format(SID_AIN_SWITCHCMD_URL, ain, switchcmd, sid);
 
 		logger.debug("send: {}", path);
@@ -275,7 +299,7 @@ public class SwitchService {
 		}
 
 	}
-	
+
 	public void validateConnection() throws IOException, Exception {
 		String sid = getCachedSessionId();
 		if (sid == null || EMPTY_SID.equals(sid) || sid.length() != EMPTY_SID.length()) {
@@ -285,19 +309,50 @@ public class SwitchService {
 
 	public Collection<SwitchDevice> getSwitchDevices() throws ServiceNotSupportedException, Exception {
 
-		String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST, getCachedSessionId());
-		if (resp == null || resp.isEmpty()){
+		String sid = getCachedSessionId();
+		Devicelist devList = getDevicelist(sid);
+		if (devList == null) {
 			return Collections.emptySet();
 		}
-		Set<SwitchDevice> deviceList = Arrays.asList(resp.split(",")).stream().filter((t) -> t != null && !t.isEmpty()).map((t) -> new SwitchDevice(t)).collect(Collectors.toSet());
 
-		deviceList.forEach((dev) -> {
-			try {
-				refreshSwitchDevice(dev);
-			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
+		Set<SwitchDevice> deviceList = new HashSet<>();
+		for (Device d : devList.getDevice()) {
+			if (d.getSwitch() == null) {
+				logger.debug("skip dev: {}", d.getIdentifier());
+				continue;
 			}
-		});
+			SwitchDevice dev = new SwitchDevice(d.getIdentifier());
+			dev.setName(d.getName());
+			dev.setPresent(d.isPresent());
+			dev.setState(d.getSwitch().getState());
+
+			if (d.getPowermeter() != null) {
+				dev.setPower(d.getPowermeter().getPower());
+				dev.setEnergy(d.getPowermeter().getEnergy());
+			}
+			if (d.getTemperature() != null) {
+				dev.setTemperature(d.getTemperature().getCelsius() + d.getTemperature().getOffset());
+			}
+			deviceList.add(dev);
+		}
+
+		// String resp = sendSwitchCmd(SwitchCmd.GETSWITCHLIST,
+		// getCachedSessionId());
+		// if (resp == null || resp.isEmpty()) {
+		// return Collections.emptySet();
+		// }
+		// Set<SwitchDevice> deviceList =
+		// Arrays.asList(resp.split(",")).stream().filter((t) -> t != null &&
+		// !t.isEmpty()).map((t) -> new
+		// SwitchDevice(t)).collect(Collectors.toSet());
+		//
+		// deviceList.forEach((dev) -> {
+		// try {
+		// refreshSwitchDevice(dev);
+		// } catch (Exception e) {
+		// logger.error(e.getMessage(), e);
+		// }
+		// });
 
 		return deviceList;
 
@@ -306,7 +361,7 @@ public class SwitchService {
 	public void updateDeviceState(final SwitchDevice dev) throws Exception {
 		logger.info("try to change device state: {}", dev);
 
-		String sid = getSessionId();
+		String sid = getCachedSessionId();
 
 		switch (dev.getState()) {
 		case ON:
@@ -324,37 +379,95 @@ public class SwitchService {
 	public void refreshSwitchDevice(final SwitchDevice dev) throws Exception {
 		String sid = getCachedSessionId();
 
-		dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPRESENT, sid)));
-		dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME, sid));
-		
-		if (!dev.isPresent()){
-			logger.debug("skip not present dev: {}", dev);
+		Devicelist devList = getDevicelist(sid);
+		if (devList == null) {
 			return;
 		}
-		
-		dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE, sid));
-		
-		if (dev.getAin().contains("-")){
-			logger.debug("skip updated group: {}", dev);
-			return;
+
+		for (Device d : devList.getDevice()) {
+			if (!dev.getAin().equals(d.getIdentifier())) {
+				logger.debug("skip dev: {}", d.getIdentifier());
+				continue;
+			}
+
+			dev.setName(d.getName());
+			dev.setPresent(d.isPresent());
+			if (d.getSwitch() != null) {
+				dev.setState(d.getSwitch().getState());
+			}
+			if (d.getPowermeter() != null) {
+				dev.setPower(d.getPowermeter().getPower());
+				dev.setEnergy(d.getPowermeter().getEnergy());
+			}
+			if (d.getTemperature() != null) {
+				dev.setTemperature(d.getTemperature().getCelsius() + d.getTemperature().getOffset());
+			}
 		}
-		try {
-			String power = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER, sid);
-			dev.setPower("inval".equals(power) ? 0 : Integer.valueOf(power));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			dev.setPower(-1);
-		}
-		try {
-			String energy = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHENERGY, sid);
-			dev.setEnergy("inval".equals(energy) ? 0 : Integer.valueOf(energy));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			dev.setEnergy(-1);
-		}
+
+		// dev.setPresent("1".equals(sendSwitchCmd(dev.getAin(),
+		// SwitchCmd.GETSWITCHPRESENT, sid)));
+		// dev.setName(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHNAME,
+		// sid));
+		//
+		// if (!dev.isPresent()) {
+		// logger.debug("skip not present dev: {}", dev);
+		// return;
+		// }
+		//
+		// dev.setState(sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHSTATE,
+		// sid));
+		//
+		// if (dev.getAin().contains("-")) {
+		// logger.debug("skip updated group: {}", dev);
+		// return;
+		// }
+		// try {
+		// String power = sendSwitchCmd(dev.getAin(), SwitchCmd.GETSWITCHPOWER,
+		// sid);
+		// dev.setPower("inval".equals(power) ? 0 : Integer.valueOf(power));
+		// } catch (Exception e) {
+		// logger.error(e.getMessage(), e);
+		// dev.setPower(-1);
+		// }
+		// try {
+		// String energy = sendSwitchCmd(dev.getAin(),
+		// SwitchCmd.GETSWITCHENERGY, sid);
+		// dev.setEnergy("inval".equals(energy) ? 0 : Integer.valueOf(energy));
+		// } catch (Exception e) {
+		// logger.error(e.getMessage(), e);
+		// dev.setEnergy(-1);
+		// }
 
 		logger.debug("updated: {}", dev);
 
+	}
+
+	public Devicelist getDevicelist(String sid) throws IOException, JAXBException, ServiceNotSupportedException {
+
+		String path = String.format(SID_SWITCHCMD_URL, SwitchCmd.GETDEVICELISTINFOS, sid);
+
+		logger.debug("send: {}", path);
+		HttpURLConnection con = createConnection(path);
+
+		if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+			invalidateSidCache();
+			throw new IOException("response code: " + con.getResponseCode());
+		}
+		sidCacheTimeProperty.set(System.currentTimeMillis());
+
+		Unmarshaller unmarshaller = getDeviceListContext().createUnmarshaller();
+		Devicelist devList = null;
+
+		try (BufferedInputStream is = new BufferedInputStream(con.getInputStream())) {
+			devList = (Devicelist) unmarshaller.unmarshal(is);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+
+		if (devList == null) {
+			throw new ServiceNotSupportedException(SwitchCmd.GETDEVICELISTINFOS.toString());
+		}
+		return devList;
 	}
 
 }

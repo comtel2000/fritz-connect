@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.comtel</groupId>
 	<artifactId>fritz-connect</artifactId>
-	<version>8.0.5-SNAPSHOT</version>
+	<version>8.0.20-SNAPSHOT</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -26,6 +25,19 @@
 							<schemaDirectory>${basedir}/src/main/resources/org/comtel/fritz/connect/bookmark</schemaDirectory>
 							<schemaFiles>schema.xsd</schemaFiles>
 							<packageName>org.comtel.fritz.connect.bookmark</packageName>
+							<clearOutputDir>false</clearOutputDir>
+						</configuration>
+					</execution>
+					<execution>
+						<id>devicelist-xjc</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/main/java/</outputDirectory>
+							<schemaDirectory>${basedir}/src/main/resources/org/comtel/fritz/connect/device</schemaDirectory>
+							<schemaFiles>devicelist.xsd</schemaFiles>
+							<packageName>org.comtel.fritz.connect.devicelist</packageName>
 							<clearOutputDir>false</clearOutputDir>
 						</configuration>
 					</execution>
@@ -58,14 +70,10 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.bluestemsoftware.open.maven.plugin</groupId> <artifactId>launch4j-plugin</artifactId> <version>1.5.0.0</version> 
-				<executions> <execution> <id>launch4j</id> <phase>package</phase> <goals> <goal>launch4j</goal> </goals> <configuration> 
-				<dontWrapJar>false</dontWrapJar> <headerType>gui</headerType> <outfile>target/${project.name}-${project.version}.exe</outfile> 
-				<jar>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar> <errTitle>${project.name}</errTitle> 
-				<jre> <minVersion>1.8.0</minVersion> </jre> <versionInfo> <fileVersion>1.0.0.0</fileVersion> <txtFileVersion>1.0.0.0</txtFileVersion> 
-				<fileDescription>Switcher.APP</fileDescription> <copyright>(c)omtel 2013</copyright> <productVersion>1.0.0.0</productVersion> 
-				<txtProductVersion>1.0.0.0</txtProductVersion> <productName>Switcher.APP</productName> <internalName>${project.artifactId}</internalName> 
-				<originalFilename>${project.name}-${project.version}.exe</originalFilename> </versionInfo> </configuration> </execution> 
+			<!-- <plugin> <groupId>org.bluestemsoftware.open.maven.plugin</groupId> <artifactId>launch4j-plugin</artifactId> <version>1.5.0.0</version> <executions> <execution> <id>launch4j</id> <phase>package</phase> <goals> <goal>launch4j</goal> </goals> <configuration> 
+				<dontWrapJar>false</dontWrapJar> <headerType>gui</headerType> <outfile>target/${project.name}-${project.version}.exe</outfile> <jar>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar> <errTitle>${project.name}</errTitle> <jre> 
+				<minVersion>1.8.0</minVersion> </jre> <versionInfo> <fileVersion>1.0.0.0</fileVersion> <txtFileVersion>1.0.0.0</txtFileVersion> <fileDescription>Switcher.APP</fileDescription> <copyright>(c)omtel 2013</copyright> <productVersion>1.0.0.0</productVersion> 
+				<txtProductVersion>1.0.0.0</txtProductVersion> <productName>Switcher.APP</productName> <internalName>${project.artifactId}</internalName> <originalFilename>${project.name}-${project.version}.exe</originalFilename> </versionInfo> </configuration> </execution> 
 				</executions> </plugin> -->
 		</plugins>
 	</build>
@@ -79,18 +87,18 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
-			<version>8.0.6_20</version>
+			<version>8.0.7_20-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jasypt</groupId>
